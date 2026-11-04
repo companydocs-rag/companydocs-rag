@@ -78,6 +78,18 @@ def test_importing_language_does_not_import_preocr():
     _assert_import_does_not_pull_in_preocr("import companydocs_rag.ingestion.language")
 
 
+def test_importing_normalization_does_not_import_preocr():
+    _assert_import_does_not_pull_in_preocr(
+        "import companydocs_rag.ingestion.normalization"
+    )
+
+
+def test_importing_normalize_cli_does_not_import_preocr():
+    _assert_import_does_not_pull_in_preocr(
+        "import companydocs_rag.ingestion.normalize_cli"
+    )
+
+
 def test_quality_exports_are_still_reachable_through_the_package():
     """The quality names re-exported from the package must keep working."""
     _assert_import_does_not_pull_in_preocr(
