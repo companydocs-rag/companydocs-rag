@@ -7,8 +7,9 @@ data/*
 !data/raw/
 !data/interim/
 !data/processed/
-data/raw/*
-!data/raw/.gitkeep
+# data/raw/ is tracked: the public PDFs and 00_INDEX.csv. Demo-only documents
+# (copyright reserved) go to data/raw/demo-only/ and stay out of git.
+data/raw/demo-only/
 data/interim/*
 !data/interim/.gitkeep
 data/processed/*

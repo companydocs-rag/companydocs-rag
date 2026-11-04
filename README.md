@@ -13,10 +13,12 @@ A BUas challenge by Roef, Rutger and Lucan. Each person's own experiment is in
 ## Quick start
 
 1. Set up the machine (uv, Tesseract, Ollama): [docs/ONBOARDING.md](docs/ONBOARDING.md).
-2. Fetch the documents: `uv run python scripts/download_corpus.py`. The script
-   reads `corpus/sources.csv`, downloads every PDF to `data/raw/<domain>/`,
-   checks its sha256 and writes `data/raw/00_INDEX.csv`. The PDFs themselves
-   are not in git.
+2. The documents: the 26 public PDFs are in the repository under
+   `data/raw/<domain>/`, with the index `data/raw/00_INDEX.csv`.
+   `uv run python scripts/download_corpus.py` checks them against the sha256 in
+   `corpus/sources.csv` and downloads any that are missing; with
+   `--with-demo-only` it also fetches the two SNA documents that may not be
+   redistributed, into `data/raw/demo-only/`, which stays out of git.
 3. Build the pipeline: `companydocs-parse-pass data/raw -r` →
    `companydocs-normalize` → `companydocs-chunk` → `companydocs-index`.
 4. Ask questions: `uv run companydocs-demo` and open `http://127.0.0.1:8765/`.
@@ -86,7 +88,7 @@ Options:
 - `-q/--quiet`: warnings and errors only.
 
 The default locations are under the project folder (the folder with
-`pyproject.toml`), in `data/`, which git ignores.
+`pyproject.toml`), in `data/`; git ignores everything there except `data/raw/`.
 
 What a run writes:
 

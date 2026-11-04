@@ -54,7 +54,7 @@ Check: `2485 passed, 1 xfailed` (or more, as tests are added), exit 0; ruff prin
 uv run python scripts/download_corpus.py
 ```
 
-Downloads every source with `include` = `yes` in `corpus/sources.csv` to `data/raw/<domain>/<id>.pdf`, checks each sha256, and writes `data/raw/00_INDEX.csv`. Check: exit 0 and `N of N sources in place`. A `sha256 differs` line means the publisher replaced the file: tell the team; do not edit the hash on your own, since everyone must index the same files.
+The 26 public PDFs come with the clone (`data/raw/<domain>/<id>.pdf`, plus `data/raw/00_INDEX.csv`). The script checks every one against its sha256 in `corpus/sources.csv` and downloads any that is missing. Check: exit 0 and `26 of 26 sources in place`. For the demo, `--with-demo-only` also fetches the two SNA documents whose copyright forbids redistribution, into `data/raw/demo-only/`; git ignores that folder, so they never get committed. Build the index for the evaluation without them. A `sha256 differs` line means the publisher replaced the file: tell the team; do not edit the hash on your own, since everyone must index the same files.
 
 ## 5. Models [person]
 

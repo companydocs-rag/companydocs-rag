@@ -5,15 +5,20 @@ Usage (from the repository root):
     uv run python scripts/download_corpus.py [--with-demo-only] [--only ID ...]
 
 For every source with ``include`` = ``yes`` (and ``demo-only`` with
-``--with-demo-only``) it downloads the URL, checks that the file is a PDF and
-that its sha256 equals the ``sha256`` column, and stores it as
-``data/raw/<domain>/<id>.pdf``. A file already in place with the right hash is
-not downloaded again. A source whose download fails or whose hash differs is
-reported and not stored; the others go on (never a silent skip).
+``--with-demo-only``) it checks the file in place against the ``sha256``
+column and, when it is missing or differs, downloads the URL, checks that it is
+a PDF with that sha256, and stores it. The ``yes`` sources are committed in git
+as ``data/raw/<domain>/<id>.pdf``; ``demo-only`` sources go to
+``data/raw/demo-only/<domain>/<id>.pdf``, which git ignores (their copyright
+forbids redistribution). A source whose download fails or whose hash differs
+is reported and not stored; the others go on (never a silent skip).
 
-Afterwards it writes ``data/raw/00_INDEX.csv`` (``Map;Bestandsnaam;Taal;
-Documenttype``) for every PDF in place, which the parse pass reads for the
-language and the demo and ``companydocs-metadata`` for the document type.
+Afterwards it writes the index ``00_INDEX.csv`` (``Map;Bestandsnaam;Taal;
+Documenttype``) over every PDF in place, whatever was selected: one in
+``data/raw/`` for the ``yes`` sources (committed) and one in
+``data/raw/demo-only/`` for the demo-only sources. The parse pass reads the
+nearest index for the language, the demo and ``companydocs-metadata`` for the
+document type. Build the evaluation index without the demo-only documents.
 
 Exit codes: 0 every selected source in place; 1 one or more failed (the rest
 is in place and indexed); 2 cannot start (no sources file, bad columns).
@@ -33,6 +38,7 @@ import httpx
 ROOT = Path(__file__).resolve().parents[1]
 SOURCES = ROOT / "corpus" / "sources.csv"
 RAW = ROOT / "data" / "raw"
+DEMO_ONLY = RAW / "demo-only"
 INDEX_NAME = "00_INDEX.csv"
 
 DELIMITER = ";"
@@ -91,8 +97,12 @@ def sha256_of(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest().upper()
 
 
+def base_of(row: Dict[str, str]) -> Path:
+    return DEMO_ONLY if row["include"] == "demo-only" else RAW
+
+
 def target_of(row: Dict[str, str]) -> Path:
-    return RAW / row["domain"] / f"{row['id']}.pdf"
+    return base_of(row) / row["domain"] / f"{row['id']}.pdf"
 
 
 def fetch(client: httpx.Client, row: Dict[str, str]) -> str:
@@ -123,19 +133,23 @@ def fetch(client: httpx.Client, row: Dict[str, str]) -> str:
 
 
 def write_index(rows: List[Dict[str, str]]) -> int:
-    lines = []
-    for row in rows:
-        target = target_of(row)
-        if target.exists():
-            lines.append(
-                [row["domain"], target.name, "NL", DOMAIN_TYPES[row["domain"]]]
-            )
-    RAW.mkdir(parents=True, exist_ok=True)
-    with (RAW / INDEX_NAME).open("w", encoding=ENCODING, newline="") as handle:
-        writer = csv.writer(handle, delimiter=DELIMITER, lineterminator="\n")
-        writer.writerow(["Map", "Bestandsnaam", "Taal", "Documenttype"])
-        writer.writerows(lines)
-    return len(lines)
+    """Write the index of every base folder over all sources in place."""
+    written = 0
+    for base in (RAW, DEMO_ONLY):
+        lines = [
+            [row["domain"], target_of(row).name, "NL", DOMAIN_TYPES[row["domain"]]]
+            for row in rows
+            if base_of(row) == base and target_of(row).exists()
+        ]
+        if base == DEMO_ONLY and not lines:
+            continue
+        base.mkdir(parents=True, exist_ok=True)
+        with (base / INDEX_NAME).open("w", encoding=ENCODING, newline="") as handle:
+            writer = csv.writer(handle, delimiter=DELIMITER, lineterminator="\n")
+            writer.writerow(["Map", "Bestandsnaam", "Taal", "Documenttype"])
+            writer.writerows(lines)
+        written += len(lines)
+    return written
 
 
 def main(argv: List[str] | None = None) -> int:
@@ -174,10 +188,10 @@ def main(argv: List[str] | None = None) -> int:
                 failures[row["id"]] = reason
                 print(f"FAILED         {row['id']}: {reason}", file=sys.stderr)
 
-    indexed = write_index(selected)
+    indexed = write_index(rows)
     print(
         f"\n{len(selected) - len(failures)} of {len(selected)} sources in place; "
-        f"{indexed} in {RAW / INDEX_NAME}"
+        f"{indexed} indexed under {RAW}"
     )
     return 1 if failures else 0
 
