@@ -74,7 +74,7 @@ uv run companydocs-chunk
 uv run companydocs-index
 ```
 
-The parse pass runs OCR on pages without a text layer (cached in `data/interim/ocr_cache/`, so a rerun is fast). The index build is the slow step on a CPU. Check: each exits 0; `data/processed/index/manifest.json` exists. Run the parse pass from PowerShell, not from Git Bash (`Git\usr\bin`, docs/DEVELOPMENT.md).
+The parse pass runs OCR on pages without a text layer (cached in `data/interim/ocr_cache/`, so a rerun is fast). The index build is the slow step on a CPU: count on an hour or more for the 26 documents on a laptop, with a memory peak of about 6.5 GB, so close other programs first and do not run the language model at the same time. Check: each exits 0; `data/processed/index/manifest.json` exists. Run the parse pass from PowerShell, not from Git Bash (`Git\usr\bin`, docs/DEVELOPMENT.md).
 
 ## 7. Search, answer, demo
 
@@ -85,7 +85,7 @@ uv run companydocs-search "Hoe lang duurt fase A in de ABU-cao?"
 uv run companydocs-demo
 ```
 
-The demo prints `http://127.0.0.1:8765/` when ready (the first start loads the LLM and can take a few minutes on a laptop without an NVIDIA GPU; an answer can take one to a few minutes). Ctrl+C stops it.
+The search needs only the index; the demo also needs Ollama running (the Ollama app in the system tray, or `ollama serve`) with the model of step 5. The demo prints `http://127.0.0.1:8765/` when ready (the first start loads the LLM and can take a few minutes on a laptop without an NVIDIA GPU; an answer can take one to a few minutes). Ctrl+C stops it.
 
 ## 8. Evaluate
 
