@@ -12,18 +12,43 @@ A BUas challenge by Roef, Rutger and Lucan. Each person's own experiment is in
 
 ## Quick start
 
-1. Set up the machine (uv, Tesseract, Ollama): [docs/ONBOARDING.md](docs/ONBOARDING.md).
-2. The documents: the 26 public PDFs are in the repository under
+The full walkthrough, with a check after every step, is
+[docs/ONBOARDING.md](docs/ONBOARDING.md). In short:
+
+1. Tools: uv, Tesseract 5.5.3 with the language data `ces deu eng fra nld pol
+   slk`, and Ollama (ONBOARDING, step 1).
+2. Python environment: `uv sync --python 3.12`; check with the tests,
+   `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/run-tests.ps1`.
+3. The documents: the 26 public PDFs are in the repository under
    `data/raw/<domain>/`, with the index `data/raw/00_INDEX.csv`.
    `uv run python scripts/download_corpus.py` checks them against the sha256 in
    `corpus/sources.csv` and downloads any that are missing; with
    `--with-demo-only` it also fetches the two SNA documents that may not be
    redistributed, into `data/raw/demo-only/`, which stays out of git.
-3. Build the pipeline: `companydocs-parse-pass data/raw -r` →
-   `companydocs-normalize` → `companydocs-chunk` → `companydocs-index`.
-4. Ask questions: `uv run companydocs-demo` and open `http://127.0.0.1:8765/`.
-5. Measure: `uv run python scripts/evaluate_retrieval.py` on
+4. The language model, pulled and created by hand (see Ollama models):
+
+   ```powershell
+   ollama pull gemma4:e4b
+   ollama create companydocs-gemma4-e4b-8k -f config/ollama/companydocs-gemma4-e4b-8k.Modelfile
+   ```
+
+5. Build the pipeline, in this order (the index step downloads the embedding
+   model, about 1.2 GB, on its first run):
+
+   ```powershell
+   uv run companydocs-parse-pass data/raw -r
+   uv run companydocs-normalize
+   uv run companydocs-chunk
+   uv run companydocs-index
+   ```
+
+6. Ask questions: `uv run companydocs-search "<question>"` (retrieval only) or
+   `uv run companydocs-demo` and open `http://127.0.0.1:8765/` (needs step 4).
+7. Measure: `uv run python scripts/evaluate_retrieval.py --label baseline` on
    `evaluation/questions.csv` (see `evaluation/README.md`).
+
+Only one process at a time may hold the index: do not run search, answer, the
+demo or the evaluation while another of them, or the index build, is running.
 
 This README describes the parse pass, normalization, chunking,
 `companydocs-metadata` and the demo; `companydocs-index`, `companydocs-search`
