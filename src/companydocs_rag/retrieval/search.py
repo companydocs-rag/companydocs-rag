@@ -51,6 +51,7 @@ from companydocs_rag.embeddings.dense import (
     is_finite_above_zero,
     setting_integer,
     setting_number,
+    setting_string,
 )
 from companydocs_rag.embeddings.sparse import query_sparse_vector, sparse_terms
 from companydocs_rag.ingestion.settings import get_section
@@ -64,8 +65,10 @@ from companydocs_rag.vectorstore.store import (
     PAYLOAD_KEYS,
     Hit,
     IndexInUseError,
+    all_payloads,
     open_client,
     query_dense,
+    query_dense_in_file,
     query_sparse,
 )
 
@@ -78,6 +81,15 @@ RRF_K = 60
 DENSE_LIMIT = 50
 SPARSE_LIMIT = 50
 CANDIDATE_COUNT = 20
+# The judge route (Rutger's experiment, retrieval/judge.py); "none" is the baseline.
+RERANKER = "none"
+RERANKERS = ("none", "judge")
+JUDGE_MODEL_DIR = ""
+JUDGE_ADAPTER = ""
+JUDGE_DEVICE = "cpu"
+JUDGE_DOCUMENTS = 2
+JUDGE_DOC_CHUNKS = 300
+JUDGE_WINDOW_CHARS = 1600
 
 _SECTION = "retrieval"
 # D22: the manifest keys a result reports under "index".
@@ -99,6 +111,13 @@ class RetrievalSettings:
     dense_limit: int
     sparse_limit: int
     candidate_count: int
+    reranker: str = RERANKER
+    judge_model_dir: str = JUDGE_MODEL_DIR
+    judge_adapter: str = JUDGE_ADAPTER
+    judge_device: str = JUDGE_DEVICE
+    judge_documents: int = JUDGE_DOCUMENTS
+    judge_doc_chunks: int = JUDGE_DOC_CHUNKS
+    judge_window_chars: int = JUDGE_WINDOW_CHARS
 
 
 def retrieval_settings(
@@ -143,6 +162,37 @@ def retrieval_settings(
             f"must be at most dense_limit + sparse_limit "
             f"({dense_limit + sparse_limit}), not {candidate_count}",
         )
+    reranker = setting_string(section, values, "reranker", RERANKER, empty_ok=False)
+    if reranker not in RERANKERS:
+        raise SettingsError(
+            section,
+            "reranker",
+            f"must be one of {', '.join(RERANKERS)}, not {reranker!r}",
+        )
+    judge_model_dir = setting_string(
+        section, values, "judge_model_dir", JUDGE_MODEL_DIR, empty_ok=True
+    )
+    judge_adapter = setting_string(
+        section, values, "judge_adapter", JUDGE_ADAPTER, empty_ok=True
+    )
+    judge_device = setting_string(
+        section, values, "judge_device", JUDGE_DEVICE, empty_ok=False
+    )
+    judge_documents = setting_integer(
+        section, values, "judge_documents", JUDGE_DOCUMENTS, minimum=1
+    )
+    judge_doc_chunks = setting_integer(
+        section, values, "judge_doc_chunks", JUDGE_DOC_CHUNKS, minimum=1
+    )
+    judge_window_chars = setting_integer(
+        section, values, "judge_window_chars", JUDGE_WINDOW_CHARS, minimum=200
+    )
+    if reranker == "judge" and not judge_model_dir:
+        raise SettingsError(
+            section,
+            "judge_model_dir",
+            "must name the d3-lite folder when reranker is judge",
+        )
     return RetrievalSettings(
         bm25_k1=bm25_k1,
         bm25_b=bm25_b,
@@ -150,6 +200,13 @@ def retrieval_settings(
         dense_limit=dense_limit,
         sparse_limit=sparse_limit,
         candidate_count=candidate_count,
+        reranker=reranker,
+        judge_model_dir=judge_model_dir,
+        judge_adapter=judge_adapter,
+        judge_device=judge_device,
+        judge_documents=judge_documents,
+        judge_doc_chunks=judge_doc_chunks,
+        judge_window_chars=judge_window_chars,
     )
 
 
@@ -209,8 +266,14 @@ class Retriever:
         *,
         embedder: Optional[Embedder] = None,
         settings: Optional[Mapping[str, Any]] = None,
+        judge: Optional[Any] = None,
     ) -> None:
+        """``judge`` (a score function, see retrieval/judge.py) replaces the
+        decision model of the judge route; it is used only when
+        ``retrieval.reranker`` is ``judge``."""
         self._client: Any = None
+        self._judge: Any = None
+        self._documents: Dict[str, Dict[str, Any]] = {}
         index_dir = Path(index_dir)
         embeddings_config = embeddings_settings(settings)
         self._settings = retrieval_settings(settings)
@@ -249,6 +312,7 @@ class Retriever:
 
         if embedder is not None:
             self._embedder: Embedder = embedder
+            self._setup_judge(judge)
             return
         try:
             self._embedder = SentenceTransformerEmbedder(
@@ -266,6 +330,46 @@ class Retriever:
         except BaseException:
             self.close()
             raise
+        self._setup_judge(judge)
+
+    def _setup_judge(self, judge: Optional[Any]) -> None:
+        """The judge route's documents (title and opening per file hash, from
+        the index) and its decision model; nothing when the route is off."""
+        if self._settings.reranker != "judge":
+            return
+        from .judge import document_title
+
+        first: Dict[str, Dict[str, Any]] = {}
+        for hit in all_payloads(self._client):
+            payload = hit.payload
+            key = payload.get("file_sha256", "")
+            if key not in first or payload.get("chunk_index", 0) < first[key].get(
+                "chunk_index", 0
+            ):
+                first[key] = payload
+        self._documents = {
+            key: {"title": document_title(p), "opening": str(p.get("text", ""))[:400]}
+            for key, p in first.items()
+        }
+        if judge is not None:
+            self._judge = judge
+            return
+        from .judge import load_judge
+
+        try:
+            self._judge = load_judge(
+                self._settings.judge_model_dir,
+                self._settings.judge_adapter,
+                self._settings.judge_device,
+            )
+        except Exception as error:  # noqa: BLE001 - any load failure makes the index unusable here
+            self.close()
+            raise IndexUnusableError(
+                [
+                    f"Could not load the judge from {self._settings.judge_model_dir}: "
+                    f"{type(error).__name__}: {error}"
+                ]
+            ) from error
 
     def __enter__(self) -> "Retriever":
         return self
@@ -291,9 +395,8 @@ class Retriever:
         config = self._settings
         query_terms = sparse_terms(query)
 
-        dense_hits = query_dense(
-            self._client, self._embedder.encode_query(query), config.dense_limit
-        )
+        query_vector = self._embedder.encode_query(query)
+        dense_hits = query_dense(self._client, query_vector, config.dense_limit)
         sparse_hits: List[Hit] = []
         if query_terms:  # D8: a query without terms skips the sparse leg
             vector = query_sparse_vector(query)
@@ -327,6 +430,9 @@ class Retriever:
                 candidate[key] = payload[key]
             candidates.append(candidate)
 
+        if config.reranker == "judge":
+            candidates = self._judge_route(query, query_vector, candidates, wanted)
+
         return SearchResult(
             query=query,
             query_terms=query_terms,
@@ -337,6 +443,16 @@ class Retriever:
                 "dense_limit": config.dense_limit,
                 "sparse_limit": config.sparse_limit,
                 "candidate_count": config.candidate_count,
+                **(
+                    {
+                        "reranker": config.reranker,
+                        "judge_documents": config.judge_documents,
+                        "judge_doc_chunks": config.judge_doc_chunks,
+                        "judge_window_chars": config.judge_window_chars,
+                    }
+                    if config.reranker != "none"
+                    else {}
+                ),
             },
             leg_counts={"dense": len(dense_hits), "sparse": len(sparse_hits)},
             candidates=candidates,
@@ -348,6 +464,51 @@ class Retriever:
                 if include_path_hits
                 else None
             ),
+        )
+
+    def _judge_route(
+        self,
+        query: str,
+        query_vector: Sequence[float],
+        hybrid: List[Dict[str, Any]],
+        wanted: set,
+    ) -> List[Dict[str, Any]]:
+        """The judge route (retrieval/judge.py) on top of the hybrid candidates."""
+        from .judge import judge_rank
+
+        config = self._settings
+
+        def doc_chunks(file_sha256: str) -> List[Dict[str, Any]]:
+            found = []
+            for hit in query_dense_in_file(
+                self._client, query_vector, file_sha256, config.judge_doc_chunks
+            ):
+                candidate: Dict[str, Any] = {
+                    "rank": None,
+                    "chunk_id": hit.chunk_id,
+                    "rrf_score": None,
+                    "dense_rank": None,
+                    "dense_score": hit.score,
+                    "sparse_rank": None,
+                    "sparse_score": None,
+                    "sparse_matched_terms": sorted(
+                        wanted & set(sparse_terms(compose_embedding_text(hit.payload)))
+                    ),
+                }
+                for key in PAYLOAD_KEYS[1:]:
+                    candidate[key] = hit.payload[key]
+                found.append(candidate)
+            return found
+
+        return judge_rank(
+            query,
+            self._documents,
+            hybrid,
+            doc_chunks,
+            self._judge,
+            top_documents=config.judge_documents,
+            window_chars=config.judge_window_chars,
+            result_count=config.candidate_count,
         )
 
 

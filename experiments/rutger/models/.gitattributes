@@ -1,0 +1,2 @@
+# The judge files (fine-tuned LoRA, readout rows and weight edits) go through Git LFS.
+*.pt filter=lfs diff=lfs merge=lfs -text

@@ -15,6 +15,13 @@ dependencies = [
     "transformers==5.18.0",
 ]
 
+[project.optional-dependencies]
+# The judge route (retrieval.reranker: judge, Rutger's experiment): the d3 model
+# code loads with a device map, which transformers only does with accelerate.
+judge = [
+    "accelerate==1.15.0",
+]
+
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",

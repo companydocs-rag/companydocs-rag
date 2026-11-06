@@ -177,6 +177,49 @@ def query_dense(client: QdrantClient, vector: Sequence[float], limit: int) -> Li
     return _hits(response.points)
 
 
+def query_dense_in_file(
+    client: QdrantClient, vector: Sequence[float], file_sha256: str, limit: int
+) -> List[Hit]:
+    """The dense leg inside one document: at most ``limit`` of its points by
+    cosine score (the judge route's passage step)."""
+    response = client.query_points(
+        COLLECTION_NAME,
+        query=list(vector),
+        using=DENSE_VECTOR_NAME,
+        query_filter=models.Filter(
+            must=[
+                models.FieldCondition(
+                    key="file_sha256", match=models.MatchValue(value=file_sha256)
+                )
+            ]
+        ),
+        limit=limit,
+        with_payload=True,
+    )
+    return _hits(response.points)
+
+
+def all_payloads(client: QdrantClient) -> List[Hit]:
+    """Every point's payload (score 0.0), without vectors (the judge route's
+    document step reads titles and openings from it)."""
+    hits: List[Hit] = []
+    offset = None
+    while True:
+        points, offset = client.scroll(
+            COLLECTION_NAME,
+            limit=1024,
+            offset=offset,
+            with_payload=True,
+            with_vectors=False,
+        )
+        hits += [
+            Hit(chunk_id_for(point.id), 0.0, dict(point.payload or {}))
+            for point in points
+        ]
+        if offset is None:
+            return hits
+
+
 def query_sparse(
     client: QdrantClient, indices: Sequence[int], values: Sequence[float], limit: int
 ) -> List[Hit]:

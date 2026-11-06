@@ -627,3 +627,24 @@ retrieval:
 
   # Not measured.
   candidate_count: 20
+
+  # The judge route (Rutger's experiment, retrieval/judge.py): none (the baseline) or judge.
+  reranker: none
+
+  # The downloaded d3-lite folder; empty while the judge route is off.
+  judge_model_dir: ""
+
+  # The judge file (LoRA, readout rows, weight edits); empty is the base d3-lite.
+  judge_adapter: ""
+
+  # cpu or cuda:0.
+  judge_device: cpu
+
+  # Not measured on this corpus; the benchmark lab's flat-top 2.
+  judge_documents: 2
+
+  # Not measured; bounds the judgments per question.
+  judge_doc_chunks: 300
+
+  # The text length the judge was fine-tuned on (characters).
+  judge_window_chars: 1600

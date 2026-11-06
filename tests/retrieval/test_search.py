@@ -281,6 +281,13 @@ RETRIEVAL_KEYS = [
     ("dense_limit", "DENSE_LIMIT"),
     ("sparse_limit", "SPARSE_LIMIT"),
     ("candidate_count", "CANDIDATE_COUNT"),
+    ("reranker", "RERANKER"),
+    ("judge_model_dir", "JUDGE_MODEL_DIR"),
+    ("judge_adapter", "JUDGE_ADAPTER"),
+    ("judge_device", "JUDGE_DEVICE"),
+    ("judge_documents", "JUDGE_DOCUMENTS"),
+    ("judge_doc_chunks", "JUDGE_DOC_CHUNKS"),
+    ("judge_window_chars", "JUDGE_WINDOW_CHARS"),
 ]
 
 
@@ -376,4 +383,23 @@ def test_the_yaml_section_carries_the_settings_table_comments():
         "dense_limit": "Not measured.",
         "sparse_limit": "Not measured.",
         "candidate_count": "Not measured.",
+        "reranker": (
+            "The judge route (Rutger's experiment, retrieval/judge.py): "
+            "none (the baseline) or judge."
+        ),
+        "judge_model_dir": (
+            "The downloaded d3-lite folder; empty while the judge route is off."
+        ),
+        "judge_adapter": (
+            "The judge file (LoRA, readout rows, weight edits); "
+            "empty is the base d3-lite."
+        ),
+        "judge_device": "cpu or cuda:0.",
+        "judge_documents": (
+            "Not measured on this corpus; the benchmark lab's flat-top 2."
+        ),
+        "judge_doc_chunks": "Not measured; bounds the judgments per question.",
+        "judge_window_chars": (
+            "The text length the judge was fine-tuned on (characters)."
+        ),
     }
