@@ -39,8 +39,8 @@ Detail: [experiments/roef/](../experiments/roef/)
 | Topic | Retrieval strategy: a decision model as relevance judge (DecisionRAG-style route on top of the hybrid search) |
 | What changed or was tested | `retrieval.reranker: judge` (default `none`): a fine-tuned and weight-edited d3-lite judge (Qwen3.5-0.8B) picks the two best documents, judges their passages and the hybrid top 20, and ranks by P(yes); compared with the hybrid baseline, with the fine-tuned (unedited) judge beside it. The judge was chosen, fine-tuned and edited in a separate benchmark lab first (ConditionalQA, LegalBench-RAG, bBSARD); see the README |
 | Code / config | `src/companydocs_rag/retrieval/judge.py`, `retrieval/search.py`, `vectorstore/store.py`, `tests/retrieval/test_judge.py`; `experiments/rutger/settings.yaml` (edited judge), `settings-judge-tuned.yaml` |
-| Evaluation outcome | On 27 questions: page_hit@1 0.407 -> 0.481, page_hit@3 0.556 -> 0.778, page_hit@10 0.815 -> 0.926, MRR 0.518 -> 0.650 (baseline -> judge route, edited judge; `evaluation/results/rutger-full-baseline-20261104-1815.json`, `rutger-full-judge-edited-20261104-1815.json`) |
-| Conclusion | The judge route stays behind a setting; the baseline remains the default (team decision). Cost: about half a minute per question on an 8 GB GPU (31 s measured) |
+| Evaluation outcome | On 100 questions: page_hit@1 0.370 -> 0.630, page_hit@3 0.520 -> 0.830, page_hit@10 0.770 -> 0.960, MRR 0.486 -> 0.740 (baseline -> judge route, edited judge; `evaluation/results/rutger-baseline.json`, `rutger-judge-edited.json`) |
+| Conclusion | The judge route stays behind a setting; the baseline remains the default (team decision). On 100 questions both judges clearly beat the baseline (edited MRR 0.740, fine-tuned 0.778, baseline 0.486). Cost: about 18 s per question on an 8 GB GPU |
 
 Detail: [experiments/rutger/](../experiments/rutger/)
 

@@ -86,7 +86,7 @@ All behind one setting, `retrieval.reranker` (default `none`, the baseline):
 | `experiments/rutger/models/` | the two judge files (Git LFS, via the `.gitattributes` in that folder) |
 | `experiments/rutger/download_d3_lite.py` | fetches the d3-lite base model at the pinned revision and checks it |
 | `experiments/rutger/lab/` | the benchmark-lab scripts, reports and weight-editing logs behind the judge |
-| `evaluation/questions.csv`, `evaluation/results/rutger-*.json` | my questions (RU01-RU27) and the result files |
+| `evaluation/questions.csv`, `evaluation/results/rutger-*.json` | the question set (RU01-RU100) and the result files |
 
 The judge route, per question:
 
@@ -123,63 +123,143 @@ session logs: [lab/README.md](lab/README.md).
 
 ## Results
 
-Measured on the corpus of `corpus/sources.csv` (26 documents). Notes on the
-setup: the measurement copy used the CUDA build of the same torch release
-(2.14.1) and embedded the index on the GPU in float32 (same model, revision
-and precision as the CPU default); Tesseract was not installed, so the one
-page without a text layer (1 of 5 pages of `woo-houten-uitzendorganisaties-2025`)
-has no text. Unanswerable questions count with their closest source, as in
-`evaluation/README.md`.
+Measured on the corpus of `corpus/sources.csv` (26 documents) with the 100
+questions of `evaluation/questions.csv` (RU01-RU100: 43 rule, 33 fact, 14
+comparison, 10 unanswerable; every document has at least two; each answer was
+checked against the text of the cited PDF page). Unanswerable questions count
+with their closest source, as in `evaluation/README.md`.
 
-### Full question set (the team's questions plus mine), Roef's merged chunker
+Notes on the setup: the measurement copy used the CUDA build of the same torch
+release (2.14.1) and embedded the index on the GPU in float32 (same model,
+revision and precision as the CPU default); during the judge runs the query
+embedder ran on the CPU, so the GPU held only the judge. Before each long run a
+short probe on the heaviest questions checked that GPU memory stays below the
+8 GB limit (peak 6.3 GB). Tesseract was not installed, so the one page without
+a text layer (1 of 5 pages of `woo-houten-uitzendorganisaties-2025`) has no
+text.
+
+### The question set: 100 questions (RU01-RU100), Roef's merged chunker
 
 <!-- FULL:START -->
-Questions: 27; result files: `evaluation/results/rutger-full-baseline-20261104-1815.json`, `evaluation/results/rutger-full-judge-edited-20261104-1815.json`, `evaluation/results/rutger-full-judge-tuned-20261104-1815.json`.
+Questions: 100; result files: `evaluation/results/rutger-baseline.json`, `evaluation/results/rutger-judge-edited.json`, `evaluation/results/rutger-judge-tuned.json`.
 
 | setup | doc_hit@1 | page_hit@1 | page_hit@3 | page_hit@5 | page_hit@10 | mrr |
 |---|---|---|---|---|---|---|
-| baseline (hybrid) | 0.741 | 0.407 | 0.556 | 0.667 | 0.815 | 0.518 |
-| judge route, edited judge | 0.704 | 0.481 | 0.778 | 0.852 | 0.926 | 0.650 |
-| judge route, fine-tuned judge | 0.704 | 0.556 | 0.815 | 0.889 | 0.926 | 0.690 |
+| baseline (hybrid) | 0.780 | 0.370 | 0.520 | 0.640 | 0.770 | 0.486 |
+| judge route, edited judge | 0.820 | 0.630 | 0.830 | 0.880 | 0.960 | 0.740 |
+| judge route, fine-tuned judge | 0.830 | 0.690 | 0.840 | 0.900 | 0.930 | 0.778 |
 
-Judge route (edited) vs baseline: page_hit@1 0.407 -> 0.481, page_hit@3 0.556 -> 0.778, MRR 0.518 -> 0.650.
+Judge route (edited) vs baseline: page_hit@1 0.370 -> 0.630, page_hit@3 0.520 -> 0.830, MRR 0.486 -> 0.740.
 
 <details><summary>Page rank of the right source per question (- = not in the top 20)</summary>
 
 | question | type | baseline (hybrid) | judge route, edited judge | judge route, fine-tuned judge |
 |---|---|---|---|---|
-| RU01 |  | 8 | 3 | 5 |
-| RU02 |  | 1 | 1 | 1 |
-| RU03 |  | - | 1 | 3 |
-| RU04 |  | - | 11 | 11 |
-| RU05 |  | 1 | 2 | 1 |
-| RU06 |  | 1 | 3 | 1 |
-| RU07 |  | 1 | 6 | 1 |
-| RU08 |  | 1 | 1 | 1 |
-| RU09 |  | 2 | 2 | 2 |
-| RU10 |  | 2 | 1 | 1 |
-| RU11 |  | 3 | 1 | 1 |
-| RU12 |  | 9 | 4 | 3 |
-| RU13 |  | 3 | 1 | 1 |
-| RU14 |  | 11 | 1 | 1 |
-| RU15 |  | 1 | 1 | 1 |
-| RU16 |  | 1 | 1 | 1 |
-| RU17 |  | 1 | 2 | 1 |
-| RU18 |  | - | 2 | 2 |
-| RU19 |  | - | - | - |
-| RU20 |  | 1 | 2 | 2 |
-| RU21 |  | 7 | 2 | 4 |
-| RU22 |  | 1 | 1 | 1 |
-| RU23 |  | 4 | 1 | 1 |
-| RU24 |  | 4 | 1 | 2 |
-| RU25 |  | 10 | 1 | 1 |
-| RU26 |  | 4 | 8 | 10 |
-| RU27 |  | 1 | 4 | 3 |
+| RU01 | rule | 8 | 3 | 5 |
+| RU02 | fact | 1 | 1 | 1 |
+| RU03 | fact | - | 1 | 3 |
+| RU04 | fact | - | 11 | 11 |
+| RU05 | fact | 1 | 2 | 1 |
+| RU06 | rule | 1 | 3 | 1 |
+| RU07 | rule | 1 | 6 | 1 |
+| RU08 | rule | 1 | 1 | 1 |
+| RU09 | rule | 2 | 2 | 2 |
+| RU10 | fact | 2 | 1 | 1 |
+| RU100 | rule | 4 | 1 | 1 |
+| RU11 | comparison | 3 | 1 | 1 |
+| RU12 | comparison | 9 | 4 | 3 |
+| RU13 | rule | 3 | 1 | 1 |
+| RU14 | rule | 11 | 1 | 1 |
+| RU15 | fact | 1 | 1 | 1 |
+| RU16 | rule | 1 | 1 | 1 |
+| RU17 | unanswerable | 1 | 2 | 1 |
+| RU18 | unanswerable | - | 2 | 2 |
+| RU19 | fact | - | - | - |
+| RU20 | rule | 1 | 2 | 2 |
+| RU21 | rule | 7 | 2 | 4 |
+| RU22 | rule | 1 | 1 | 1 |
+| RU23 | fact | 4 | 1 | 1 |
+| RU24 | rule | 4 | 1 | 2 |
+| RU25 | fact | 10 | 1 | 1 |
+| RU26 | rule | 4 | 8 | 10 |
+| RU27 | unanswerable | 1 | 4 | 3 |
+| RU28 | fact | 1 | 1 | 1 |
+| RU29 | comparison | 2 | 1 | 1 |
+| RU30 | comparison | - | 1 | 1 |
+| RU31 | comparison | 4 | 1 | 1 |
+| RU32 | rule | 1 | 1 | 1 |
+| RU33 | fact | 2 | 8 | 5 |
+| RU34 | fact | 19 | 1 | 1 |
+| RU35 | fact | 1 | 1 | 1 |
+| RU36 | fact | 3 | 1 | 1 |
+| RU37 | rule | 1 | 1 | 1 |
+| RU38 | rule | - | 3 | 2 |
+| RU39 | fact | 4 | 1 | 1 |
+| RU40 | unanswerable | 1 | 1 | 1 |
+| RU41 | comparison | 2 | 2 | 1 |
+| RU42 | fact | 5 | 5 | 4 |
+| RU43 | fact | 1 | 1 | 1 |
+| RU44 | rule | - | - | - |
+| RU45 | fact | 7 | 1 | 1 |
+| RU46 | fact | 13 | 2 | 2 |
+| RU47 | comparison | - | 1 | 1 |
+| RU48 | unanswerable | 1 | 1 | 1 |
+| RU49 | rule | 1 | 1 | 1 |
+| RU50 | fact | 6 | 1 | 1 |
+| RU51 | rule | 4 | 5 | 1 |
+| RU52 | rule | - | 6 | 8 |
+| RU53 | rule | 5 | 9 | 8 |
+| RU54 | unanswerable | 1 | 1 | 1 |
+| RU55 | comparison | 9 | 9 | 13 |
+| RU56 | rule | 13 | 3 | 1 |
+| RU57 | rule | 13 | 1 | 1 |
+| RU58 | fact | 1 | 1 | 1 |
+| RU59 | comparison | 2 | 1 | 1 |
+| RU60 | fact | 1 | 1 | 1 |
+| RU61 | fact | 15 | 6 | 5 |
+| RU62 | rule | 7 | 1 | 1 |
+| RU63 | rule | 1 | 1 | 1 |
+| RU64 | fact | 1 | 1 | 1 |
+| RU65 | comparison | 4 | 4 | 18 |
+| RU66 | comparison | 5 | 1 | 1 |
+| RU67 | unanswerable | 1 | 3 | 2 |
+| RU68 | fact | 3 | 1 | 1 |
+| RU69 | rule | - | 1 | 1 |
+| RU70 | fact | 1 | 1 | 1 |
+| RU71 | rule | 1 | 2 | 1 |
+| RU72 | fact | 6 | 1 | 1 |
+| RU73 | rule | 2 | 3 | 3 |
+| RU74 | rule | - | 2 | 4 |
+| RU75 | fact | 1 | 1 | 1 |
+| RU76 | unanswerable | 8 | 1 | 1 |
+| RU77 | rule | 1 | 1 | 1 |
+| RU78 | rule | 1 | 1 | 1 |
+| RU79 | rule | 1 | 2 | 2 |
+| RU80 | rule | 3 | 1 | 1 |
+| RU81 | rule | 1 | 1 | 1 |
+| RU82 | rule | 1 | 1 | 1 |
+| RU83 | comparison | 1 | 1 | 1 |
+| RU84 | fact | 3 | 1 | 1 |
+| RU85 | fact | 4 | 3 | 2 |
+| RU86 | unanswerable | - | - | - |
+| RU87 | rule | 15 | 1 | 1 |
+| RU88 | rule | 18 | 1 | 1 |
+| RU89 | comparison | 12 | 1 | 1 |
+| RU90 | rule | - | 8 | - |
+| RU91 | rule | 1 | 1 | 1 |
+| RU92 | rule | 10 | 1 | 1 |
+| RU93 | rule | 1 | 1 | 1 |
+| RU94 | fact | 13 | 1 | 1 |
+| RU95 | comparison | 8 | 1 | 1 |
+| RU96 | fact | 6 | 3 | 2 |
+| RU97 | unanswerable | 2 | 2 | 2 |
+| RU98 | rule | 3 | 1 | 1 |
+| RU99 | fact | 1 | 1 | 1 |
 
 </details>
 <!-- FULL:END -->
 
-### Preliminary: my 27 questions, chunker from the team's starting files
+### Earlier run: the first 27 questions (RU01-RU27)
 
 <!-- PRELIM:START -->
 Questions: 27; result files: `evaluation/results/rutger-prelim-baseline.json`, `evaluation/results/rutger-prelim-edited.json`, `evaluation/results/rutger-prelim-tuned.json`.
@@ -229,8 +309,17 @@ Judge route (edited) vs baseline: page_hit@1 0.407 -> 0.481, page_hit@3 0.556 ->
 
 ## Conclusion
 
-See the full results above. The judge route is kept behind
-`retrieval.reranker` and the baseline stays the default; changing the default
-needs this result and a team decision (docs/DEVELOPMENT.md). The cost is time:
-about half a minute per question on an 8 GB GPU (31 s measured), against about a second for
-the hybrid search.
+On 100 questions the judge route finds the right page far more often than the
+hybrid baseline: with the edited judge page_hit@1 0.370 -> 0.630, page_hit@3
+0.520 -> 0.830, page_hit@10 0.770 -> 0.960 and MRR 0.486 -> 0.740. The
+fine-tuned judge is a little ahead at the top (page_hit@1 0.690, MRR 0.778) and
+the edited judge further down (page_hit@10 0.960 against 0.930); on this Dutch
+corpus the edit's contract-question path rarely fires, so the two are close.
+On the English legal benchmarks the edited judge was the better one (see "What
+I tried locally first").
+
+The judge route stays behind `retrieval.reranker` and the baseline stays the
+default; changing the default needs this result and a team decision
+(docs/DEVELOPMENT.md). The cost is time: about 18 seconds per question on an
+8 GB GPU (31 minutes for the 100 questions), against about a second for the
+hybrid search.

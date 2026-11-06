@@ -1,0 +1,1121 @@
+{
+  "label": "rutger-judge-edited",
+  "created": "2026-11-06T12:37:52+00:00",
+  "git_commit": "b62c0d9",
+  "settings_file": "experiments/rutger/settings.yaml",
+  "index_dir": "data\\processed\\index-full-20261104-1815",
+  "questions": 100,
+  "summary": {
+    "doc_hit@1": 0.82,
+    "page_hit@1": 0.63,
+    "doc_hit@3": 0.95,
+    "page_hit@3": 0.83,
+    "doc_hit@5": 0.97,
+    "page_hit@5": 0.88,
+    "doc_hit@10": 0.98,
+    "page_hit@10": 0.96,
+    "mrr": 0.7400479797979799
+  },
+  "per_question": [
+    {
+      "question_id": "RU01",
+      "author": "Rutger",
+      "doc_rank": 3,
+      "page_rank": 3,
+      "top3": [
+        "cao-metalektro-avv-2026:12-13",
+        "cao-nbbu-2026:44-45",
+        "cao-abu-2026:46-46"
+      ]
+    },
+    {
+      "question_id": "RU02",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "wet-wml-indexatie-2026-07:2-2",
+        "wet-wml-indexatie-2026-07:2-2",
+        "wet-wml-indexatie-2026-07:1-1"
+      ]
+    },
+    {
+      "question_id": "RU03",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "wet-wml-indexatie-2026-07:2-3",
+        "cao-metaalbewerking-avv-2026:15-15",
+        "cao-metaalbewerking-avv-2026:15-15"
+      ]
+    },
+    {
+      "question_id": "RU04",
+      "author": "Rutger",
+      "doc_rank": 2,
+      "page_rank": 11,
+      "top3": [
+        "wet-wtta-mvt-36446-3:174-174",
+        "wet-wtta-ik-stb-2026-159:4-4",
+        "wet-wtta-ik-stb-2026-159:4-5"
+      ]
+    },
+    {
+      "question_id": "RU05",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 2,
+      "top3": [
+        "wet-wtta-mvt-36446-3:151-152",
+        "wet-wtta-mvt-36446-3:33-33",
+        "wet-wtta-stb-2025-385:10-11"
+      ]
+    },
+    {
+      "question_id": "RU06",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 3,
+      "top3": [
+        "wet-atw-brochure-szw:1-3",
+        "wet-atw-brochure-szw:28-29",
+        "wet-atw-brochure-szw:3-4"
+      ]
+    },
+    {
+      "question_id": "RU07",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 6,
+      "top3": [
+        "wet-atw-brochure-szw:29-30",
+        "wet-atw-brochure-szw:19-19",
+        "wet-atw-brochure-szw:1-3"
+      ]
+    },
+    {
+      "question_id": "RU08",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "privacy-nvp-sollicitatiecode-2025:9-9",
+        "wet-baadi-stb-2026-41:69-69",
+        "privacy-nvp-sollicitatiecode-2025:11-12"
+      ]
+    },
+    {
+      "question_id": "RU09",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 2,
+      "top3": [
+        "privacy-handleiding-avg:4-4",
+        "privacy-handleiding-avg:65-65",
+        "privacy-handleiding-avg:65-65"
+      ]
+    },
+    {
+      "question_id": "RU10",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "contract-rheden-raamovk-uitzenden:5-6",
+        "contract-assen-concept-raamovk-2022:10-10",
+        "contract-westerkwartier-raamovk-2021:2-2"
+      ]
+    },
+    {
+      "question_id": "RU11",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "contract-rheden-raamovk-uitzenden:5-6",
+        "contract-rheden-raamovk-uitzenden:1-2",
+        "contract-westerkwartier-raamovk-2021:1-1"
+      ]
+    },
+    {
+      "question_id": "RU12",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 4,
+      "top3": [
+        "cao-abu-2026:19-20",
+        "cao-abu-2026:21-22",
+        "cao-abu-2026:16-16"
+      ]
+    },
+    {
+      "question_id": "RU13",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cert-sna-herstelbeoordeling:1-2",
+        "cert-sna-herstelbeoordeling:1-1",
+        "cert-sna-normwijzigingen:1-2"
+      ]
+    },
+    {
+      "question_id": "RU14",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "dba-geen-werkgeversgezag-vnoncw:2-2",
+        "dba-geen-werkgeversgezag-vnoncw:1-2",
+        "dba-geen-werkgeversgezag-vnoncw:3-4"
+      ]
+    },
+    {
+      "question_id": "RU15",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "wet-wml-indexatie-2026-07:2-2",
+        "wet-wml-indexatie-2026-07:1-1",
+        "wet-wml-indexatie-2026-07:2-2"
+      ]
+    },
+    {
+      "question_id": "RU16",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cao-metaalbewerking-avv-2026:9-9",
+        "cao-metaalbewerking-avv-2026:43-44",
+        "cao-metaalbewerking-avv-2026:38-38"
+      ]
+    },
+    {
+      "question_id": "RU17",
+      "author": "Rutger",
+      "doc_rank": 2,
+      "page_rank": 2,
+      "top3": [
+        "cao-metaalbewerking-avv-2026:17-17",
+        "wet-wml-indexatie-2026-07:2-2",
+        "cao-metaalbewerking-avv-2026:16-17"
+      ]
+    },
+    {
+      "question_id": "RU18",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 2,
+      "top3": [
+        "dba-geen-werkgeversgezag-vnoncw:1-1",
+        "dba-geen-werkgeversgezag-vnoncw:2-3",
+        "dba-geen-werkgeversgezag-vnoncw:2-2"
+      ]
+    },
+    {
+      "question_id": "RU19",
+      "author": "Rutger",
+      "doc_rank": 9,
+      "page_rank": null,
+      "top3": [
+        "wet-wtta-mvt-36446-3:150-150",
+        "wet-wtta-mvt-36446-3:150-150",
+        "wet-wtta-mvt-36446-3:149-150"
+      ]
+    },
+    {
+      "question_id": "RU20",
+      "author": "Rutger",
+      "doc_rank": 2,
+      "page_rank": 2,
+      "top3": [
+        "privacy-handleiding-avg:67-67",
+        "privacy-toelichting-vwo-arvodi-2025:6-7",
+        "privacy-handleiding-avg:70-70"
+      ]
+    },
+    {
+      "question_id": "RU21",
+      "author": "Rutger",
+      "doc_rank": 2,
+      "page_rank": 2,
+      "top3": [
+        "cao-abu-2026:31-31",
+        "cao-nbbu-2026:28-28",
+        "cao-abu-2026:30-30"
+      ]
+    },
+    {
+      "question_id": "RU22",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "woo-houten-uitzendorganisaties-2025:2-2",
+        "woo-houten-uitzendorganisaties-2025:1-1",
+        "woo-houten-uitzendorganisaties-2025:2-3"
+      ]
+    },
+    {
+      "question_id": "RU23",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "contract-assen-concept-raamovk-2022:6-6",
+        "contract-assen-concept-raamovk-2022:28-29",
+        "contract-assen-concept-raamovk-2022:24-24"
+      ]
+    },
+    {
+      "question_id": "RU24",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cert-sna-reglement-registratie-2026:10-11",
+        "cert-sna-reglement-registratie-2026:9-10",
+        "wet-baadi-stb-2026-41:28-28"
+      ]
+    },
+    {
+      "question_id": "RU25",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "wet-baadi-stb-2026-41:4-4",
+        "wet-baadi-stb-2026-41:73-74",
+        "wet-wtta-mvt-36446-3:145-145"
+      ]
+    },
+    {
+      "question_id": "RU26",
+      "author": "Rutger",
+      "doc_rank": 2,
+      "page_rank": 8,
+      "top3": [
+        "dba-geen-werkgeversgezag-vnoncw:3-3",
+        "dba-tussenkomst:4-4",
+        "dba-geen-werkgeversgezag-vnoncw:5-5"
+      ]
+    },
+    {
+      "question_id": "RU27",
+      "author": "Rutger",
+      "doc_rank": 4,
+      "page_rank": 4,
+      "top3": [
+        "wet-wtta-mvt-36446-3:56-56",
+        "cao-nbbu-2026:23-24",
+        "cao-nbbu-2026:1-2"
+      ]
+    },
+    {
+      "question_id": "RU28",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cao-metaalbewerking-avv-2026:5-6",
+        "cao-metaalbewerking-avv-2026:380-381",
+        "cao-metaalbewerking-avv-2026:395-396"
+      ]
+    },
+    {
+      "question_id": "RU29",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cao-metaalbewerking-avv-2026:2-2",
+        "privacy-handleiding-avg:67-67",
+        "cao-metaalbewerking-avv-2026:54-54"
+      ]
+    },
+    {
+      "question_id": "RU30",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cao-metaalbewerking-avv-2026:27-27",
+        "cao-metalektro-avv-2026:9-10",
+        "cao-metalektro-avv-2026:10-10"
+      ]
+    },
+    {
+      "question_id": "RU31",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cao-metalektro-avv-2026:7-7",
+        "cao-metaalbewerking-avv-2026:24-24",
+        "cao-metaalbewerking-avv-2026:34-35"
+      ]
+    },
+    {
+      "question_id": "RU32",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cao-metaalbewerking-avv-2026:29-30",
+        "cao-metaalbewerking-avv-2026:47-47",
+        "cao-metaalbewerking-avv-2026:29-29"
+      ]
+    },
+    {
+      "question_id": "RU33",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 8,
+      "top3": [
+        "cao-metaalbewerking-avv-2026:47-47",
+        "cao-metaalbewerking-avv-2026:49-50",
+        "cao-metalektro-avv-2026:12-12"
+      ]
+    },
+    {
+      "question_id": "RU34",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cao-metaalbewerking-avv-2026:3-3",
+        "cao-metaalbewerking-avv-2026:380-381",
+        "cao-nbbu-2026:41-41"
+      ]
+    },
+    {
+      "question_id": "RU35",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cao-metaalbewerking-avv-2026:28-29",
+        "cao-metaalbewerking-avv-2026:29-29",
+        "cao-metaalbewerking-avv-2026:29-29"
+      ]
+    },
+    {
+      "question_id": "RU36",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cao-metalektro-avv-2026:15-15",
+        "cao-metalektro-avv-2026:16-16",
+        "cao-metalektro-avv-2026:29-29"
+      ]
+    },
+    {
+      "question_id": "RU37",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cao-metalektro-avv-2026:14-14",
+        "cao-metalektro-avv-2026:14-14",
+        "cao-metalektro-avv-2026:13-14"
+      ]
+    },
+    {
+      "question_id": "RU38",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 3,
+      "top3": [
+        "cao-metalektro-avv-2026:1-1",
+        "cao-metalektro-avv-2026:33-33",
+        "cao-metalektro-avv-2026:26-26"
+      ]
+    },
+    {
+      "question_id": "RU39",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cao-metalektro-avv-2026:8-9",
+        "cao-metalektro-avv-2026:6-7",
+        "cao-metalektro-avv-2026:29-29"
+      ]
+    },
+    {
+      "question_id": "RU40",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cao-metalektro-avv-2026:29-29",
+        "cao-metalektro-avv-2026:41-41",
+        "cao-metaalbewerking-avv-2026:73-73"
+      ]
+    },
+    {
+      "question_id": "RU41",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 2,
+      "top3": [
+        "cao-metaalbewerking-avv-2026:47-48",
+        "cao-metaalbewerking-avv-2026:35-35",
+        "cao-metaalbewerking-avv-2026:35-35"
+      ]
+    },
+    {
+      "question_id": "RU42",
+      "author": "Rutger",
+      "doc_rank": 2,
+      "page_rank": 5,
+      "top3": [
+        "cao-nbbu-2026:64-65",
+        "cao-abu-2026:5-5",
+        "cao-abu-2026:54-55"
+      ]
+    },
+    {
+      "question_id": "RU43",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cao-abu-2026:38-38",
+        "cao-nbbu-2026:35-35",
+        "cao-abu-2026:37-38"
+      ]
+    },
+    {
+      "question_id": "RU44",
+      "author": "Rutger",
+      "doc_rank": null,
+      "page_rank": null,
+      "top3": [
+        "cao-nbbu-2026:56-56",
+        "cao-nbbu-2026:62-62",
+        "cao-nbbu-2026:43-44"
+      ]
+    },
+    {
+      "question_id": "RU45",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cao-nbbu-2026:9-9",
+        "cao-nbbu-2026:10-11",
+        "cao-nbbu-2026:8-9"
+      ]
+    },
+    {
+      "question_id": "RU46",
+      "author": "Rutger",
+      "doc_rank": 2,
+      "page_rank": 2,
+      "top3": [
+        "wet-baadi-stb-2026-41:18-19",
+        "cao-nbbu-2026:48-48",
+        "cao-nbbu-2026:38-38"
+      ]
+    },
+    {
+      "question_id": "RU47",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cao-nbbu-2026:52-52",
+        "cao-abu-2026:70-73",
+        "cao-nbbu-2026:1-2"
+      ]
+    },
+    {
+      "question_id": "RU48",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cao-nbbu-2026:48-48",
+        "cao-abu-2026:50-50",
+        "cao-nbbu-2026:63-63"
+      ]
+    },
+    {
+      "question_id": "RU49",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "wet-wtta-mvt-36446-3:54-54",
+        "wet-wtta-mvt-36446-3:2-2",
+        "wet-wtta-mvt-36446-3:165-166"
+      ]
+    },
+    {
+      "question_id": "RU50",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "wet-wtta-mvt-36446-3:63-63",
+        "wet-wtta-mvt-36446-3:54-54",
+        "privacy-handleiding-avg:94-94"
+      ]
+    },
+    {
+      "question_id": "RU51",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 5,
+      "top3": [
+        "wet-wtta-mvt-36446-3:33-33",
+        "wet-wtta-mvt-36446-3:105-105",
+        "wet-wtta-mvt-36446-3:107-107"
+      ]
+    },
+    {
+      "question_id": "RU52",
+      "author": "Rutger",
+      "doc_rank": 2,
+      "page_rank": 6,
+      "top3": [
+        "wet-baadi-stb-2026-41:16-16",
+        "wet-wtta-mvt-36446-3:22-22",
+        "wet-wtta-mvt-36446-3:31-31"
+      ]
+    },
+    {
+      "question_id": "RU53",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 9,
+      "top3": [
+        "wet-wtta-mvt-36446-3:52-52",
+        "wet-wtta-mvt-36446-3:26-27",
+        "wet-wtta-mvt-36446-3:115-115"
+      ]
+    },
+    {
+      "question_id": "RU54",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "wet-wtta-mvt-36446-3:167-168",
+        "wet-wtta-mvt-36446-3:18-19",
+        "wet-wtta-mvt-36446-3:167-168"
+      ]
+    },
+    {
+      "question_id": "RU55",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 9,
+      "top3": [
+        "wet-baadi-stb-2026-41:18-18",
+        "wet-baadi-stb-2026-41:19-19",
+        "wet-baadi-stb-2026-41:18-18"
+      ]
+    },
+    {
+      "question_id": "RU56",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 3,
+      "top3": [
+        "wet-baadi-stb-2026-41:75-76",
+        "wet-baadi-stb-2026-41:34-34",
+        "wet-baadi-stb-2026-41:4-4"
+      ]
+    },
+    {
+      "question_id": "RU57",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "wet-baadi-stb-2026-41:4-5",
+        "wet-baadi-stb-2026-41:33-33",
+        "wet-baadi-stb-2026-41:80-80"
+      ]
+    },
+    {
+      "question_id": "RU58",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "wet-baadi-stb-2026-41:8-9",
+        "wet-baadi-stb-2026-41:41-41",
+        "wet-baadi-stb-2026-41:81-82"
+      ]
+    },
+    {
+      "question_id": "RU59",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "wet-wtta-mvt-36446-3:29-30",
+        "wet-wtta-stb-2025-385:6-6",
+        "wet-wtta-mvt-36446-3:29-29"
+      ]
+    },
+    {
+      "question_id": "RU60",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "wet-wtta-stb-2025-385:7-7",
+        "wet-wtta-mvt-36446-3:86-86",
+        "wet-wtta-mvt-36446-3:29-29"
+      ]
+    },
+    {
+      "question_id": "RU61",
+      "author": "Rutger",
+      "doc_rank": 2,
+      "page_rank": 6,
+      "top3": [
+        "wet-wtta-mvt-36446-3:6-7",
+        "wet-wtta-ik-stb-2026-159:4-4",
+        "wet-wtta-mvt-36446-3:31-31"
+      ]
+    },
+    {
+      "question_id": "RU62",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "wet-atw-brochure-szw:26-27",
+        "cao-nbbu-2026:1-2",
+        "cao-nbbu-2026:61-61"
+      ]
+    },
+    {
+      "question_id": "RU63",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "wet-atw-brochure-szw:8-8",
+        "wet-atw-brochure-szw:28-29",
+        "wet-atw-brochure-szw:17-17"
+      ]
+    },
+    {
+      "question_id": "RU64",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "contract-assen-concept-raamovk-2022:12-12",
+        "contract-assen-concept-raamovk-2022:1-3",
+        "contract-assen-concept-raamovk-2022:11-12"
+      ]
+    },
+    {
+      "question_id": "RU65",
+      "author": "Rutger",
+      "doc_rank": 4,
+      "page_rank": 4,
+      "top3": [
+        "cao-abu-2026:21-22",
+        "cao-nbbu-2026:1-2",
+        "cao-nbbu-2026:13-15"
+      ]
+    },
+    {
+      "question_id": "RU66",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "contract-assen-concept-raamovk-2022:23-24",
+        "contract-rheden-raamovk-uitzenden:5-5",
+        "contract-assen-concept-raamovk-2022:28-29"
+      ]
+    },
+    {
+      "question_id": "RU67",
+      "author": "Rutger",
+      "doc_rank": 3,
+      "page_rank": 3,
+      "top3": [
+        "contract-westerkwartier-raamovk-2021:1-1",
+        "contract-assen-concept-raamovk-2022:6-6",
+        "contract-rheden-raamovk-uitzenden:1-2"
+      ]
+    },
+    {
+      "question_id": "RU68",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "contract-westerkwartier-raamovk-2021:2-3",
+        "contract-westerkwartier-raamovk-2021:1-1",
+        "cao-nbbu-2026:9-9"
+      ]
+    },
+    {
+      "question_id": "RU69",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "contract-westerkwartier-raamovk-2021:3-3",
+        "cao-metalektro-avv-2026:1-2",
+        "cao-nbbu-2026:45-46"
+      ]
+    },
+    {
+      "question_id": "RU70",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "woo-houten-uitzendorganisaties-2025:2-2",
+        "woo-houten-uitzendorganisaties-2025:1-1",
+        "woo-houten-uitzendorganisaties-2025:1-1"
+      ]
+    },
+    {
+      "question_id": "RU71",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 2,
+      "top3": [
+        "privacy-handleiding-avg:71-72",
+        "privacy-handleiding-avg:55-55",
+        "privacy-handleiding-avg:4-5"
+      ]
+    },
+    {
+      "question_id": "RU72",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "privacy-handleiding-avg:74-74",
+        "privacy-handleiding-avg:78-78",
+        "privacy-handleiding-avg:5-5"
+      ]
+    },
+    {
+      "question_id": "RU73",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 3,
+      "top3": [
+        "privacy-handleiding-avg:71-71",
+        "privacy-handleiding-avg:4-5",
+        "privacy-handleiding-avg:50-50"
+      ]
+    },
+    {
+      "question_id": "RU74",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 2,
+      "top3": [
+        "privacy-handleiding-avg:56-56",
+        "privacy-handleiding-avg:57-57",
+        "privacy-handleiding-avg:99-99"
+      ]
+    },
+    {
+      "question_id": "RU75",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "privacy-handleiding-avg:94-94",
+        "privacy-handleiding-avg:94-94",
+        "wet-baadi-stb-2026-41:25-25"
+      ]
+    },
+    {
+      "question_id": "RU76",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "privacy-handleiding-avg:1-2",
+        "privacy-handleiding-avg:12-12",
+        "privacy-handleiding-avg:14-14"
+      ]
+    },
+    {
+      "question_id": "RU77",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "privacy-nvp-sollicitatiecode-2025:8-8",
+        "privacy-nvp-sollicitatiecode-2025:4-5",
+        "privacy-handleiding-avg:5-5"
+      ]
+    },
+    {
+      "question_id": "RU78",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "privacy-nvp-sollicitatiecode-2025:5-6",
+        "privacy-nvp-sollicitatiecode-2025:2-3",
+        "privacy-nvp-sollicitatiecode-2025:4-5"
+      ]
+    },
+    {
+      "question_id": "RU79",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 2,
+      "top3": [
+        "privacy-toelichting-vwo-arvodi-2025:2-2",
+        "privacy-toelichting-vwo-arvodi-2025:5-6",
+        "privacy-handleiding-avg:5-6"
+      ]
+    },
+    {
+      "question_id": "RU80",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "privacy-toelichting-vwo-arvodi-2025:3-4",
+        "privacy-toelichting-vwo-arvodi-2025:6-7",
+        "privacy-toelichting-vwo-arvodi-2025:1-1"
+      ]
+    },
+    {
+      "question_id": "RU81",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "dba-bemiddeling-abu:7-8",
+        "dba-bemiddeling-nbbu:5-5",
+        "dba-bemiddeling-abu:12-12"
+      ]
+    },
+    {
+      "question_id": "RU82",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "dba-bemiddeling-abu:11-12",
+        "dba-bemiddeling-abu:3-3",
+        "dba-bemiddeling-abu:10-11"
+      ]
+    },
+    {
+      "question_id": "RU83",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "dba-bemiddeling-abu:4-5",
+        "dba-geen-werkgeversgezag-vnoncw:5-5",
+        "dba-bemiddeling-nbbu:2-3"
+      ]
+    },
+    {
+      "question_id": "RU84",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "dba-bemiddeling-nbbu:6-6",
+        "dba-bemiddeling-nbbu:5-5",
+        "dba-bemiddeling-abu:12-13"
+      ]
+    },
+    {
+      "question_id": "RU85",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 3,
+      "top3": [
+        "dba-bemiddeling-nbbu:3-4",
+        "privacy-handleiding-avg:78-78",
+        "dba-bemiddeling-nbbu:5-5"
+      ]
+    },
+    {
+      "question_id": "RU86",
+      "author": "Rutger",
+      "doc_rank": null,
+      "page_rank": null,
+      "top3": [
+        "contract-westerkwartier-raamovk-2021:1-1",
+        "wet-wtta-mvt-36446-3:105-105",
+        "wet-wtta-mvt-36446-3:152-152"
+      ]
+    },
+    {
+      "question_id": "RU87",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "dba-geen-werkgeversgezag-fnv:6-7",
+        "dba-geen-werkgeversgezag-vnoncw:2-3",
+        "dba-geen-werkgeversgezag-fnv:1-1"
+      ]
+    },
+    {
+      "question_id": "RU88",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "dba-geen-werkgeversgezag-fnv:6-6",
+        "dba-geen-werkgeversgezag-vnoncw:2-3",
+        "dba-geen-werkgeversgezag-fnv:4-5"
+      ]
+    },
+    {
+      "question_id": "RU89",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "dba-geen-werkgeversgezag-fnv:6-6",
+        "dba-geen-werkgeversgezag-vnoncw:3-3",
+        "dba-geen-werkgeversgezag-fnv:1-1"
+      ]
+    },
+    {
+      "question_id": "RU90",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 8,
+      "top3": [
+        "dba-tussenkomst:4-4",
+        "dba-tussenkomst:5-5",
+        "dba-tussenkomst:4-4"
+      ]
+    },
+    {
+      "question_id": "RU91",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "dba-tussenkomst:5-5",
+        "dba-tussenkomst:4-4",
+        "dba-tussenkomst:4-4"
+      ]
+    },
+    {
+      "question_id": "RU92",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "dba-geen-werkgeversgezag-vnoncw:2-3",
+        "dba-geen-werkgeversgezag-vnoncw:2-2",
+        "dba-tussenkomst:4-4"
+      ]
+    },
+    {
+      "question_id": "RU93",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cert-sna-reglement-inspectie-2026:7-8",
+        "cert-sna-reglement-inspectie-2026:4-5",
+        "cert-sna-reglement-inspectie-2026:1-2"
+      ]
+    },
+    {
+      "question_id": "RU94",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cert-sna-reglement-inspectie-2026:10-10",
+        "cert-sna-reglement-inspectie-2026:1-2",
+        "privacy-handleiding-avg:2-2"
+      ]
+    },
+    {
+      "question_id": "RU95",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cert-sna-reglement-inspectie-2026:7-8",
+        "cert-sna-reglement-inspectie-2026:4-5",
+        "cert-sna-reglement-registratie-2026:2-2"
+      ]
+    },
+    {
+      "question_id": "RU96",
+      "author": "Rutger",
+      "doc_rank": 3,
+      "page_rank": 3,
+      "top3": [
+        "cert-sna-reglement-inspectie-2026:8-8",
+        "cert-sna-reglement-inspectie-2026:10-10",
+        "cert-sna-reglement-registratie-2026:6-7"
+      ]
+    },
+    {
+      "question_id": "RU97",
+      "author": "Rutger",
+      "doc_rank": 2,
+      "page_rank": 2,
+      "top3": [
+        "cert-sna-reglement-inspectie-2026:3-4",
+        "cert-sna-reglement-registratie-2026:5-6",
+        "cert-sna-reglement-registratie-2026:8-9"
+      ]
+    },
+    {
+      "question_id": "RU98",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cert-sna-herstelbeoordeling:1-2",
+        "cert-sna-herstelbeoordeling:2-2",
+        "cert-sna-herstelbeoordeling:2-3"
+      ]
+    },
+    {
+      "question_id": "RU99",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cert-sna-normwijzigingen:1-2",
+        "cert-sna-herstelbeoordeling:1-1",
+        "cert-sna-herstelbeoordeling:3-3"
+      ]
+    },
+    {
+      "question_id": "RU100",
+      "author": "Rutger",
+      "doc_rank": 1,
+      "page_rank": 1,
+      "top3": [
+        "cert-sna-herstelbeoordeling:1-2",
+        "cert-sna-normwijzigingen:2-2",
+        "cert-sna-normwijzigingen:1-2"
+      ]
+    }
+  ]
+}
