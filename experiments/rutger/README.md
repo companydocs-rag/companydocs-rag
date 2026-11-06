@@ -318,6 +318,15 @@ corpus the edit's contract-question path rarely fires, so the two are close.
 On the English legal benchmarks the edited judge was the better one (see "What
 I tried locally first").
 
+For this pipeline the top 10 is what counts: the answer layer passes the
+model up to 20 candidates within 15,000 characters of context
+(`answering.fused_k`, `max_context_chars`), with chunks of about 1,150
+characters that is roughly 10 to 13 passages. Whether the right page is first
+or fourth matters little, as long as it is among them. On page_hit@10 the
+edited judge is the better one: the model misses the right page for 4 of the
+100 questions, against 7 with the fine-tuned judge and 23 with the baseline.
+That is why the edited judge is the main setup (`experiments/rutger/settings.yaml`).
+
 The judge route stays behind `retrieval.reranker` and the baseline stays the
 default; changing the default needs this result and a team decision
 (docs/DEVELOPMENT.md). The cost is time: about 18 seconds per question on an
