@@ -1,0 +1,3 @@
+# Archived scripts from the benchmark lab, kept unchanged as evidence of the
+# local work; they are not part of the package and are not linted or formatted.
+exclude = ["*"]
