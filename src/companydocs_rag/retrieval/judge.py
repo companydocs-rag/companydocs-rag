@@ -245,6 +245,12 @@ class DecisionJudge:
             )
             for i, row in zip(batch, rows):
                 scores[i] = row[self._true_index]
+        import torch
+
+        if torch.cuda.is_available():
+            # Long passages leave large cached blocks behind; on an 8 GB GPU they
+            # pile up until Windows spills into shared memory (5-10x slower).
+            torch.cuda.empty_cache()
         return scores
 
 
