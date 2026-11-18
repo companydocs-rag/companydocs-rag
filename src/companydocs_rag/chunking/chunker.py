@@ -47,6 +47,16 @@ its section lengths, the lower middle value for an even count, is at least
 ``structured`` when a run is accepted, else ``generic``. Every maximal stretch
 outside the sections of accepted runs is a generic region.
 
+Strategy (spec 002)
+-------------------
+``strategy`` is ``structure_aware`` by default: the route is chosen as above
+(architecture decision 2). ``fixed_length`` is an experiment that uses no run:
+every document takes the generic route, so the whole stream is one generic
+region, cut by the splitter at ``chunk_target_chars`` with
+``chunk_overlap_chars`` of overlap, without clause fields. The heading
+candidates and runs are still found and assessed, and recorded in the heading
+evidence; they decide nothing.
+
 Chunks (K8-K13)
 ---------------
 The splitter packs whole lines into a piece while it stays at most
@@ -82,6 +92,9 @@ from companydocs_rag.ingestion.parse_pass import STATUS_FAILED, STATUS_PROCESSED
 from companydocs_rag.ingestion.settings import get_section
 
 # --- Settings defaults (chunking), read at call time ----------------------------------
+# How every document is cut (spec 002): one of STRATEGIES below.
+# "structure_aware" is the baseline.
+STRATEGY = "structure_aware"
 # The keyword family's keywords (K3), tried in this order. "$" is recognition
 # only: a "$ 3" heading keeps its "$" in the text and in its clause label.
 HEADING_KEYWORDS: Tuple[str, ...] = (
@@ -123,6 +136,8 @@ DECIMAL_RE = re.compile(
 )
 
 STRUCTURE_HINT_UNKNOWN = "unknown"
+STRATEGY_STRUCTURE_AWARE = "structure_aware"
+STRATEGY_FIXED_LENGTH = "fixed_length"
 ROUTE_STRUCTURED = "structured"
 ROUTE_GENERIC = "generic"
 HEADING_FAMILY_KEYWORD = "keyword"
@@ -136,6 +151,7 @@ REJECT_SECTIONS_TOO_SHORT = "sections_too_short"
 CHUNK_ID_HEX_CHARS = 20
 
 # The values above, in the order the output and the command's summary use.
+STRATEGIES = (STRATEGY_STRUCTURE_AWARE, STRATEGY_FIXED_LENGTH)
 HEADING_FAMILIES = (HEADING_FAMILY_KEYWORD, HEADING_FAMILY_DECIMAL)
 ROUTES = (ROUTE_STRUCTURED, ROUTE_GENERIC)
 CHUNK_METHODS = (
@@ -174,6 +190,7 @@ class ChunkingSettings:
     """The resolved ``chunking`` settings, with the keyword pattern built
     from ``heading_keywords``."""
 
+    strategy: str
     heading_keywords: Tuple[str, ...]
     heading_max_gap: int
     min_heading_run_length: int
@@ -203,13 +220,19 @@ def chunking_settings(
     """Resolve the top-level ``chunking`` section at call time, YAML over the
     defaults above; ``settings`` replaces ``config/settings.yaml``.
 
-    Raises :class:`ChunkingConfigError` (R6) when ``heading_keywords`` is not
-    a non-empty list of non-empty strings, or another key is not an integer
-    (a bool is not one) or is below its minimum: 0 for ``heading_max_gap``,
+    Raises :class:`ChunkingConfigError` (R6) when ``strategy`` is not one of
+    :data:`STRATEGIES`, ``heading_keywords`` is not a non-empty list of
+    non-empty strings, or another key is not an integer (a bool is not one)
+    or is below its minimum: 0 for ``heading_max_gap``,
     ``min_run_median_section_chars`` and ``chunk_overlap_chars``, 1 for the
     rest. A key that is absent takes its default.
     """
     section = get_section("chunking", settings=settings)
+    strategy = section.get("strategy", STRATEGY)
+    if not (isinstance(strategy, str) and strategy in STRATEGIES):
+        raise ChunkingConfigError(
+            f"chunking.strategy is {strategy!r}, not one of " + ", ".join(STRATEGIES)
+        )
     keywords = section.get("heading_keywords", list(HEADING_KEYWORDS))
     if not (
         isinstance(keywords, list)
@@ -230,6 +253,7 @@ def chunking_settings(
             )
         values[key] = value
     return ChunkingSettings(
+        strategy=strategy,
         heading_keywords=tuple(keywords),
         keyword_pattern=keyword_heading_pattern(keywords),
         **values,
@@ -835,7 +859,8 @@ def chunk_document(
     Raises ``ValueError`` for any other structure hint (R5),
     :class:`NormalizedRecordError` when the record is not a valid normalized
     record, and :class:`ChunkingConfigError` for invalid settings. A failed
-    document is chunked like any other; with no pages it has no chunks.
+    document is chunked like any other; with no pages it has no chunks. Under
+    the ``fixed_length`` strategy no run cuts the document (spec 002).
     """
     if structure_hint != STRUCTURE_HINT_UNKNOWN:
         raise ValueError(
@@ -867,7 +892,10 @@ def chunk_document(
         if family is not None
         else []
     )
-    pieces = _Planner(stream, lines, config).plan(runs)
+    # The runs that cut the document: none under fixed_length (spec 002), where
+    # the runs are evidence only.
+    used = runs if config.strategy == STRATEGY_STRUCTURE_AWARE else []
+    pieces = _Planner(stream, lines, config).plan(used)
     file_sha256 = record["file"]["sha256"]
     chunks = [
         _chunk_output(index, piece, stream, placed, file_sha256, config)
@@ -884,7 +912,7 @@ def chunk_document(
         "language_source": _shared(pages, "language_source"),
         "structure_hint": structure_hint,
         "route": (
-            ROUTE_STRUCTURED if any(run.accepted for run in runs) else ROUTE_GENERIC
+            ROUTE_STRUCTURED if any(run.accepted for run in used) else ROUTE_GENERIC
         ),
         "empty_pages": [page["page_number"] for page in pages if page["text"] == ""],
         "heading_evidence": {

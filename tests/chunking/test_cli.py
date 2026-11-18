@@ -341,6 +341,8 @@ def test_the_normalized_folder_is_checked_before_the_settings(
 
 # Each R6 case: a key and a value that makes the settings invalid.
 INVALID_SETTINGS = [
+    ("strategy", "fixed"),
+    ("strategy", None),
     ("heading_keywords", "Artikel"),
     ("heading_keywords", []),
     ("heading_keywords", [""]),
@@ -390,6 +392,28 @@ def test_the_settings_file_is_read_by_the_command(tmp_path, settings_file):
 
     (run,) = _read(out / "fictief.json")["heading_evidence"]["runs"]
     assert run["reject_reason"] == "sections_too_short"
+
+
+def test_fixed_length_is_named_first_and_every_document_goes_generic(
+    tmp_path, caplog, settings_file
+):
+    settings_file({"chunking": {"strategy": "fixed_length"}})
+    source, out = tmp_path / "normalized", tmp_path / "chunks"
+    _write(source, "fictief.json", normalized_record(_articles()))
+
+    with caplog.at_level(logging.INFO, logger=LOGGER):
+        assert _run(source, out) == 0
+
+    assert _messages(caplog, logging.INFO) == [
+        "Strategy fixed_length: every document takes the generic route; "
+        "numbering runs are recorded as evidence only",
+        "Summary: documents written=1, refused=0, failed=0",
+        "Summary: routes structured=0, generic=1",
+        "Summary: runs accepted=1, run_too_short=0, sections_too_short=0",
+        "Summary: chunks total=2, heading_section=0, heading_section_part=0, "
+        "heading_section_overflow=0, generic=2; exceeds_max_chars=0",
+    ]
+    assert _read(out / "fictief.json")["route"] == "generic"
 
 
 # --- The end of the run (R8) ----------------------------------------------------------

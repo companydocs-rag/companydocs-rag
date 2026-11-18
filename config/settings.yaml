@@ -329,6 +329,15 @@ ingestion:
 # Python; sizes are counted in characters, line breaks included.
 # ---------------------------------------------------------------------------
 chunking:
+  # How every document is cut (spec 002). "structure_aware", the baseline
+  # (architecture decision 2), cuts on an accepted numbering run where a
+  # document has one and on the generic route elsewhere. "fixed_length" is an
+  # experiment (experiments/roef/): every document takes the generic route,
+  # whole lines packed into pieces of at most chunk_target_chars with
+  # chunk_overlap_chars of overlap, without clause labels; the numbering runs
+  # are still recorded as evidence.
+  strategy: "structure_aware"
+
   # A line that starts with one of these, then a number, is a keyword heading
   # candidate. Case-insensitive, tried in this order. "$" is recognition only:
   # the text keeps it.
