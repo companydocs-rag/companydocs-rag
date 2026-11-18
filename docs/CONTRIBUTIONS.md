@@ -24,11 +24,11 @@ The challenge was approved by the lecturer; the challenge form states this.
 
 | | |
 |---|---|
-| Topic | _to fill in, e.g. chunking strategy_ |
-| What changed or was tested | _the alternative, behind which setting/flag_ |
-| Code / config | _paths, PR link_ |
-| Evaluation outcome | _table: baseline vs. alternative, from `evaluation/results/`_ |
-| Conclusion | _what the effect was and what the team decided_ |
+| Topic | Chunking strategy: structure-aware chunking (architecture decision 2) against fixed-length chunks |
+| What changed or was tested | `chunking.strategy: fixed_length` (default `structure_aware`): every document takes the generic route, whole lines packed into pieces of at most `chunk_target_chars` with 150 characters of overlap, without clause labels; the numbering runs are still recorded as evidence. Measured at 600, 1,200 and 2,000 characters against the baseline; with the default settings the chunk files are byte-identical to `main`'s |
+| Code / config | `src/companydocs_rag/chunking/chunker.py`, `chunking/cli.py`, `tests/chunking/`; `experiments/roef/settings.yaml` (fixed 1,200), `settings-fixed-600.yaml`, `settings-fixed-2000.yaml`; `experiments/roef/compare.py`; `specs/002-chunking-strategy.md` |
+| Evaluation outcome | On 100 questions, baseline -> fixed 1,200: MRR 0.486 -> 0.443, page_hit@1 0.370 -> 0.320, page_hit@10 0.770 -> 0.720; 37 questions worse, 16 better (sign test p = 0.0055). Fixed 600 / 2,000: MRR 0.435 / 0.446, page_hit@1 0.270 / 0.280 (`evaluation/results/roef-baseline.json`, `roef-fixed-*.json`, `experiments/roef/results.md`) |
+| Conclusion | Structure-aware chunking puts the right page at rank 1 more often than fixed length of any of the three sizes; chunk size barely matters (MRR 0.435-0.446). The gain comes from documents with real article headings; in the Staatscourant documents the detector accepts running page headers as a numbering run (1,618 of 1,691 chunks of `cao-metaalbewerking-avv-2026`), where the gain disappears. `structure_aware` stays the default; filtering page headers out of the heading detection is the next step |
 
 Detail: [experiments/roef/](../experiments/roef/)
 
