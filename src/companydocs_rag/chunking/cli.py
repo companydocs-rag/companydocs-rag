@@ -22,7 +22,9 @@ byte-identical files.
 Exit codes: 0 when every file was written; 1 when any file was refused or
 failed; 2 when ``--normalized-dir`` is not a folder or the ``chunking``
 settings are invalid, checked in that order, before any file is read. The run
-ends with four INFO summary lines, which count the written documents.
+ends with four INFO summary lines, which count the written documents. Under a
+``chunking.strategy`` other than the default (spec 002) it starts with one
+INFO line that names it.
 """
 
 from __future__ import annotations
@@ -43,6 +45,7 @@ from .chunker import (
     REJECT_REASONS,
     REQUIRED_NORMALIZED_SCHEMA_VERSION,
     ROUTES,
+    STRATEGY_STRUCTURE_AWARE,
     STRUCTURE_HINT_UNKNOWN,
     ChunkingConfigError,
     ChunkingSettings,
@@ -174,6 +177,12 @@ def chunk_folder(
     """Chunk every normalized file under ``normalized_dir`` into
     ``chunks_dir``, log the end of the run and return its totals."""
     totals = RunTotals()
+    if config.strategy != STRATEGY_STRUCTURE_AWARE:
+        logger.info(
+            "Strategy %s: every document takes the generic route; numbering "
+            "runs are recorded as evidence only",
+            config.strategy,
+        )
     files = find_normalized_files(normalized_dir)
     if not files:
         logger.warning("No normalized files found in %s", normalized_dir)

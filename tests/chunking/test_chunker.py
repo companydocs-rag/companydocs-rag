@@ -1049,9 +1049,10 @@ def _settings_yaml():
 def test_the_settings_yaml_has_the_chunking_section_with_the_python_defaults():
     section = _settings_yaml()["chunking"]
 
-    assert list(section) == ["heading_keywords"] + [
+    assert list(section) == ["strategy", "heading_keywords"] + [
         key for key, _, _ in INTEGER_SETTINGS
     ]
+    assert section["strategy"] == "structure_aware" == chunker.STRATEGY
     assert section["heading_keywords"] == KEYWORDS
     assert list(chunker.HEADING_KEYWORDS) == section["heading_keywords"]
     for key, default, _ in INTEGER_SETTINGS:
@@ -1088,6 +1089,7 @@ def test_settings_are_read_at_call_time():
 def test_without_a_chunking_section_the_python_defaults_apply():
     config = chunking_settings({})
 
+    assert config.strategy == "structure_aware"
     assert config.heading_keywords == chunker.HEADING_KEYWORDS
     for key, default, _ in INTEGER_SETTINGS:
         assert getattr(config, key) == default
@@ -1127,3 +1129,76 @@ def test_chunk_keys_are_the_documented_ones():
     document = chunk(normalized_record(three_articles()))
 
     assert [list(piece) for piece in document["chunks"]] == [CHUNK_KEYS] * 3
+
+
+# --- The strategy (spec 002) ----------------------------------------------------------
+
+FIXED_LENGTH = settings_with(strategy="fixed_length")
+
+
+def test_the_strategies_are_structure_aware_and_fixed_length():
+    assert chunker.STRATEGIES == ("structure_aware", "fixed_length")
+    for strategy in chunker.STRATEGIES:
+        assert chunking_settings(settings_with(strategy=strategy)).strategy == strategy
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["fixed", "Fixed_Length", "", None, 1, True, ["fixed_length"]],
+    ids=["unknown", "other-case", "empty", "null", "a-number", "a-bool", "a-list"],
+)
+def test_strategy_must_be_one_of_the_strategies(value):
+    with pytest.raises(ChunkingConfigError, match="strategy"):
+        chunking_settings(settings_with(strategy=value))
+
+
+def test_fixed_length_cuts_a_structured_document_as_if_its_run_were_rejected():
+    # Two pages, so the generic pieces also cross a page join.
+    text = three_articles(900)
+    record = normalized_record(text[:1300], text[1300:])
+    rejected = settings_with(min_run_median_section_chars=10**6)
+
+    structured = chunk(record)
+    fixed = chunk(record, FIXED_LENGTH)
+
+    assert structured["route"] == "structured"
+    assert fixed["route"] == "generic"
+    assert fixed["chunks"] == chunk(record, rejected)["chunks"]
+    assert len(fixed["chunks"]) > 1
+    assert {piece["chunk_method"] for piece in fixed["chunks"]} == {"generic"}
+    assert {piece["clause_label"] for piece in fixed["chunks"]} == {None}
+    assert fixed["chunks"][-1]["page_end"] == 2
+
+
+def test_fixed_length_still_records_the_heading_evidence():
+    record = normalized_record(three_articles())
+
+    structured = chunk(record)
+    fixed = chunk(record, FIXED_LENGTH)
+
+    assert fixed["heading_evidence"] == structured["heading_evidence"]
+    assert runs_of(fixed)[0]["accepted"] is True
+
+
+@pytest.mark.parametrize(
+    "text",
+    [filler(3000), three_articles(300)],
+    ids=["no-headings", "a-rejected-run"],
+)
+def test_fixed_length_leaves_a_document_without_an_accepted_run_unchanged(text):
+    record = normalized_record(text)
+
+    document = chunk(record)
+
+    assert document["route"] == "generic"
+    assert chunk(record, FIXED_LENGTH) == document
+
+
+def test_fixed_length_takes_the_splitter_sizes_from_the_settings():
+    record = normalized_record(three_articles(900))
+    small = settings_with(strategy="fixed_length", chunk_target_chars=600)
+
+    sizes = [len(piece["text"]) for piece in chunk(record, small)["chunks"]]
+
+    assert len(sizes) > len(chunk(record, FIXED_LENGTH)["chunks"])
+    assert max(sizes) <= 600
