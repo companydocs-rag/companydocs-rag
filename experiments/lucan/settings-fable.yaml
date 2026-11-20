@@ -1,0 +1,665 @@
+# Lucan's experiment: the answer layer on Claude Fable 5.1 through Anthropic's
+# OpenAI-compatible endpoint, only for the user test (fast answers for the
+# participants). Everything else equals config/settings.yaml. Use it with
+#   $env:COMPANYDOCS_RAG_SETTINGS = "experiments/lucan/settings-fable.yaml"
+# and the API key in the user environment variable COMPANYDOCS_LLM_API_KEY
+# (never in a file). This deliberately departs from the local-only rule in
+# docs/DEVELOPMENT.md; the default configuration stays local.
+# companydocs-rag - project configuration
+#
+# Conventions:
+#   - One top-level key per pipeline stage (ingestion, chunking, embeddings, ...).
+#   - Secrets never live here; they belong in .env.
+#   - The quality, type_detection and structure sections hold TUNING DATA
+#     (thresholds, keyword lists, weights). The ocr and language sections hold
+#     operational settings: rendering, the routing switches, the Tesseract
+#     binary and its timeout, the default language, and the client index's
+#     file name and language codes.
+#     Program logic (regex construction, decision flow) lives in Python.
+#
+# The tuning data are FIRST VERSIONS. They were derived from public sources
+# (ROZ model lease agreements, BW Boek 2, the KvK Handelsregister layout) and
+# have NOT been validated against the real document set. They are
+# meant to be recalibrated through error analysis once real, labelled documents
+# can be inspected. The document type definitions (keyword lists, labels and
+# regex signals), and the page-label regexes and conjunction lists under
+# ingestion.normalization, live only in this file. Every other value here also
+# has a default in Python, so apart from those this file only needs to carry
+# the values you actually want to override.
+
+ingestion:
+  parse_pass:
+
+    # ---------------------------------------------------------------------
+    # Quality tiering (Clean / Decent / Garbage)
+    # See the TIER_* constants at the top of
+    # src/companydocs_rag/ingestion/quality.py for the rationale behind each
+    # of these numbers.
+    # ---------------------------------------------------------------------
+    quality:
+      # Axis 2 (source, per page): a page below this many characters is
+      # `no_text_layer` and is routed towards OCR (spec 003); at or above it,
+      # `native` (strictly less-than: exactly on the threshold is native).
+      # Character count alone decides this -- image coverage is recorded per
+      # page but never compared against anything. Deliberately aligned with
+      # preocr's own MIN_TEXT_LENGTH (50). See MIN_CHARS_NATIVE_PAGE in
+      # quality.py for the full rationale.
+      min_chars_native_page: 50
+
+      # Axis 3 (quality tier, per page): preocr noise ratios and character
+      # count, applied to one page's own signals -- not a document average.
+      max_noise_ratio_clean: 0.02
+      max_noise_ratio_garbage: 0.10
+
+      # Characters on one page expected of a cleanly extracted text-layer
+      # page.
+      min_chars_per_substantive_page_clean: 250
+
+      # preocr's avg_word_length signal. Garbled extractions collapse to
+      # 1-2 character "words" or fuse into very long ones.
+      min_avg_word_length_clean: 3.0
+      max_avg_word_length_clean: 12.0
+
+      # Roll-up: fraction of TIERED (native) pages that may be Garbage before
+      # the document as a whole is reported Garbage; below it, Decent, naming
+      # the offending pages. Strictly greater-than: a ratio exactly equal to
+      # this value is NOT Garbage. Provisional, pending calibration -- see
+      # MAX_GARBAGE_PAGE_RATIO_DOCUMENT in quality.py.
+      max_garbage_page_ratio_document: 0.50
+
+    # ---------------------------------------------------------------------
+    # Document type detection
+    # ---------------------------------------------------------------------
+    type_detection:
+      # A document matching this many DISTINCT type-specific terms gets full
+      # credit on the diversity component (5 different terms is a stronger
+      # signal than one term matched 5 times).
+      diversity_saturation: 5
+      # Total occurrences giving full credit on the frequency component.
+      frequency_saturation: 20
+      # Diversity is weighted well above raw frequency, on purpose.
+      diversity_weight: 0.70
+      frequency_weight: 0.30
+      # A regex signal flagged `strong: true` counts as this many distinct
+      # terms towards the diversity component.
+      strong_signal_diversity_units: 2.0
+
+      # Below either of these, the document falls back to "unknown/other".
+      min_confidence: 0.25
+      min_distinct_terms: 2
+      # How much the runner-up type suppresses confidence when two types
+      # score similarly. 1.0 = margin ignored, 0.0 = confidence collapses to
+      # zero whenever a runner-up ties the winner.
+      margin_floor: 0.40
+
+      types:
+
+        lease_agreement:
+          label: Lease/rental/hire agreement
+          # Source: ROZ model lease agreements (the de facto standard used by
+          # most professional Dutch landlords).
+          keywords:
+            nl:
+              - verhuurder
+              - huurder
+              - het gehuurde
+              - huurprijs
+              - huurperiode
+              - algemene bepalingen
+              - oplevering
+              - indexering
+              - waarborgsom
+              - opzegging
+            en:
+              - lessor
+              - lessee
+              - tenant
+              - landlord
+              - leased premises
+              - rent
+              - lease term
+            de:
+              - Vermieter
+              - Mieter
+              - Mietobjekt
+              - Mietzins
+              - Kündigung
+
+        articles_of_association:
+          label: Articles of association
+          # Source: Burgerlijk Wetboek Boek 2 and standard notarial model
+          # articles of association.
+          keywords:
+            nl:
+              - statuten
+              - akte van oprichting
+              - bestuur
+              - algemene vergadering
+              - aandeelhouder
+              - aandeelhouders
+              - raad van commissarissen
+              - vennootschap
+              - notariële akte
+              - aandelen
+            en:
+              - articles of association
+              - board of directors
+              - shareholders
+              - general meeting
+            de:
+              - Satzung
+              - Gesellschaftsvertrag
+              - Geschäftsführer
+              - Gesellschafterversammlung
+          regex_signals:
+            # References to Book 2 BW article numbers ("artikel 2:242",
+            # "art. 2:195"). Treated as a strong additional signal because
+            # this citation form barely occurs outside company law documents.
+            - name: bw_book2_article_reference
+              language: nl
+              pattern: '\bart(?:ikel)?\.?\s*2:\s*\d+'
+              strong: true
+
+        chamber_of_commerce_extract:
+          label: Chamber of Commerce extract
+          # Source: the fixed KvK Handelsregister extract layout. This is the
+          # most standardised of the four types, so these are near-verbatim
+          # field labels.
+          keywords:
+            nl:
+              - KvK-nummer
+              - KvK nummer
+              - statutaire naam
+              - rechtsvorm
+              - statutaire zetel
+              - bezoekadres
+              - datum van oprichting
+              - SBI-code
+              - bestuurder
+              - bevoegdheid
+              - enig aandeelhouder
+              - aantal werkzame personen
+              - Kamer van Koophandel
+              - Handelsregister
+            en:
+              - Chamber of Commerce number
+              - trade register extract
+
+        permit:
+          label: Permit/licence
+          # The most variable format of the four, but this vocabulary recurs
+          # regardless of the issuing authority.
+          keywords:
+            nl:
+              - vergunninghouder
+              - bevoegd gezag
+              - vergunningvoorschriften
+              - omgevingsvergunning
+              - verleend
+              - aanvraag
+            en:
+              - permit holder
+              - licensing authority
+              - granted
+              - issued
+            de:
+              - Genehmigungsinhaber
+              - zuständige Behörde
+              - erteilt
+
+    # ---------------------------------------------------------------------
+    # Formatting consistency (generic structural patterns)
+    # Deliberately type-agnostic: one small set of patterns tested against
+    # every document, best match wins. Per-type rule sets do not scale.
+    # ---------------------------------------------------------------------
+    structure:
+      # Hits giving a pattern full credit (score 1.0). Below this the score
+      # scales linearly, so "a few headings" scores lower than "headings
+      # throughout".
+      saturation:
+        numbered_clauses: 6
+        field_label_pairs: 8
+        headings: 5
+      # A pattern needs at least this many hits to be considered present.
+      min_hits: 2
+
+    # ---------------------------------------------------------------------
+    # OCR (spec 003)
+    # Routed pages are rendered whole with pypdfium2 and read by the locally
+    # installed Tesseract binary. OCR text gets no tier, and there is no
+    # confidence threshold. See src/companydocs_rag/ingestion/ocr.py.
+    # ---------------------------------------------------------------------
+    ocr:
+      # Render resolution and colour mode for each routed page.
+      dpi: 300
+      grayscale: true
+      # Routing. A no_text_layer page whose extraction did not fail is always
+      # routed; these flags also route native pages tiered Garbage, and pages
+      # whose extraction failed.
+      ocr_garbage_tier_pages: false
+      ocr_extraction_failed_pages: false
+      # The Tesseract binary; a bare name is looked up on PATH.
+      tesseract_cmd: tesseract
+      # Limit on one Tesseract run, per page, in seconds. An operational
+      # limit (a hung binary ends as an explicit error), not a quality
+      # threshold.
+      timeout_seconds: 300
+
+    # ---------------------------------------------------------------------
+    # Document language for OCR (spec 003)
+    # One language per document: the override file, then the client index
+    # found next to the PDFs, then this default. No language detection. See
+    # src/companydocs_rag/ingestion/language.py.
+    # ---------------------------------------------------------------------
+    language:
+      # Tesseract code used when neither the override file nor the client
+      # index yields a mapped code (logged as a WARNING per document).
+      default_language: nld
+      # The client index file, looked up in each PDF's nearest ancestor
+      # folder. Quoted: YAML 1.1 coerces some bare scalars.
+      index_filename: "00_INDEX.csv"
+      # The client's two-letter codes (index and override file) -> Tesseract
+      # codes. Keys quoted for the same reason.
+      language_map:
+        "NL": nld
+        "EN": eng
+        "DE": deu
+        "FR": fra
+        "PL": pol
+        "SK": slk
+        "CS": ces
+
+  # -------------------------------------------------------------------------
+  # Text normalization (spec 004): the companydocs-normalize command, which
+  # reads the page text store and writes soft-normalized text per page. See
+  # src/companydocs_rag/ingestion/normalization.py. First versions; the probe
+  # counts below are from the spec 004 probe over the 53-document corpus.
+  # -------------------------------------------------------------------------
+  normalization:
+    page_labels:
+      # Candidates for page-label removal: the first and last this many
+      # non-empty lines of each page.
+      # Probe (B8), page-label lines by position: at the first or last
+      # non-empty line, 83 label-family matches and 52 bare numbers; at the
+      # 2nd or 3rd line from an edge, 8 label-family matches and 62 bare
+      # numbers.
+      edge_lines: 3
+      # Bare-number lines grouped by offset (value minus page number) count as
+      # page numbering when the group spans at least this many distinct pages.
+      min_run_pages: 3
+      # A bare number is 1 to this many ASCII digits, the whole line.
+      bare_number_max_digits: 3
+      # Label families, tried in this order with re.fullmatch on the stripped
+      # line, case-insensitive. Single-quoted, so backslashes stay literal. The
+      # named groups page and total make the labels readable from the output.
+      # No Python copy: without this list the command stops before any file.
+      families:
+        dash_number: '-\s*(?P<page>[0-9]{1,3})\s*-'
+        pagina_van: 'pagina\s+(?P<page>[0-9]{1,3})\s+van\s+(?P<total>[0-9]{1,3})'
+        slash_total: '(?P<page>[0-9]{1,3})\s*/\s*(?P<total>[0-9]{1,3})'
+        seite_von: 'seite\s+(?P<page>[0-9]{1,3})\s+von\s+(?P<total>[0-9]{1,3})'
+        strona_z: 'strona\s+(?P<page>[0-9]{1,3})\s+z\s+(?P<total>[0-9]{1,3})'
+        strana_z: 'strana\s+(?P<page>[0-9]{1,3})\s+z\s+(?P<total>[0-9]{1,3})'
+        strana: 'strana\s+(?P<page>[0-9]{1,3})'
+        page_of: 'page\s+(?P<page>[0-9]{1,3})\s+of\s+(?P<total>[0-9]{1,3})'
+
+    dehyphenation:
+      # Rule b: a line-end hyphen stays when the next line's first word is a
+      # conjunction of the page's language (Tesseract codes), matched
+      # casefolded. First versions, not measured by the probe.
+      # Probe (B2), the 132 letter-plus-hyphen line ends by how the next
+      # non-empty line starts: 124 lowercase (native 9, OCR 115); 3 uppercase,
+      # 2 digit and 3 other, all OCR. 8 of the 132 have one blank line between.
+      # No Python copy: without these lists the command stops before any file.
+      conjunctions:
+        nld: [en, of, tot, noch, ofwel, alsmede, alsook, respectievelijk, dan]
+        eng: [and, or, nor, to, versus]
+        deu: [und, oder, bzw, beziehungsweise, sowie, bis, noch, als]
+        fra: [et, ou, ni, à]
+        pol: [i, oraz, lub, albo, czy, ani, bądź, do]
+        ces: [a, i, nebo, anebo, či, ani, až, do]
+        slk: [a, i, aj, alebo, či, ani, až, do]
+
+    filler:
+      # Runs of one of these characters collapse.
+      characters: "._-…"
+      # Probe (B3), runs of 4 or more of one character: native '-' 54, '.' 14,
+      # '_' 18; OCR '_' 128, '.' 7, '…' 4.
+      min_run: 4
+      collapse_to: 3
+
+# ---------------------------------------------------------------------------
+# Chunking (spec 005): the companydocs-chunk command, which reads the
+# normalized files and writes the chunks of each document. See
+# src/companydocs_rag/chunking/chunker.py. First versions; the counts below are
+# from probe 005 over the 53-document corpus. Every key has a default in
+# Python; sizes are counted in characters, line breaks included.
+# ---------------------------------------------------------------------------
+chunking:
+  # How every document is cut (spec 002). "structure_aware", the baseline
+  # (architecture decision 2), cuts on an accepted numbering run where a
+  # document has one and on the generic route elsewhere. "fixed_length" is an
+  # experiment (experiments/roef/): every document takes the generic route,
+  # whole lines packed into pieces of at most chunk_target_chars with
+  # chunk_overlap_chars of overlap, without clause labels; the numbering runs
+  # are still recorded as evidence.
+  strategy: "structure_aware"
+
+  # A line that starts with one of these, then a number, is a keyword heading
+  # candidate. Case-insensitive, tried in this order. "$" is recognition only:
+  # the text keeps it.
+  # Probe 005 M2, keyword candidates by keyword, case-folded: artikel 122,
+  # art. 26, section 10, article 7, čl. 2, § 1; M6: 3 "$" candidates, in one
+  # document.
+  heading_keywords:
+    - "Artikel"
+    - "Article"
+    - "Art."
+    - "Artykuł"
+    - "Článek"
+    - "Článok"
+    - "Čl."
+    - "Section"
+    - "Clause"
+    - "§"
+    - "$"
+
+  # Numbers a run may skip between two members: 0 means every step is +1.
+  # Probe 005 M3: allowing one skipped number lengthens the longest chain in
+  # 2 documents (keyword) and 9 (decimal).
+  heading_max_gap: 0
+
+  # A run needs at least this many members to be accepted, and a later run
+  # only starts after a run this long.
+  # Probe 005 M4: 29 of 53 documents have a best chain of 3 or more.
+  min_heading_run_length: 3
+
+  # A run is accepted only if the median length of its sections (the lower
+  # middle value for an even count) is at least this.
+  # Probe 005 M9, per-document median section length over the best chain:
+  # highest value below 400 is 249, lowest value at or above 400 is 570.
+  min_run_median_section_chars: 400
+
+  # Pieces of a long section that start less than this far after its heading
+  # keep the clause fields; later pieces do not.
+  # Probe 005 M9: section p90 4327, statuten p90 5725; in documents whose
+  # per-document median section length is at least 400, the largest sections
+  # are 23423 and 52585 (two lease scans); largest section overall 205554.
+  max_label_inherit_chars: 6000
+
+  # The splitter packs whole lines into pieces of at most this size; a longer
+  # line is a piece of its own.
+  # Probe 005 M9: 120 of 320 sections are longer than 1200.
+  chunk_target_chars: 1200
+
+  # A section up to this size is one chunk; a longer one is split. A chunk
+  # longer than this is marked exceeds_max_chars.
+  # Probe 005 M9: 74 of 320 sections are longer than 2000; M10: the longest
+  # line has 292 characters.
+  chunk_max_chars: 2000
+
+  # A piece repeats at most this much of the previous piece's last lines.
+  # Not measured.
+  chunk_overlap_chars: 150
+
+  # A clause label is its heading line, stripped and cut to this many
+  # characters, without an ellipsis.
+  # Probe 005 M9, heading line length p50 / p90 / max: keyword 10 / 139 / 146,
+  # decimal 84 / 111 / 221.
+  clause_label_max_chars: 80
+
+# ---------------------------------------------------------------------------
+# Embeddings (spec 006): the dense model behind companydocs-index and
+# companydocs-search. See src/companydocs_rag/embeddings/dense.py. Every key has
+# a default in Python.
+# ---------------------------------------------------------------------------
+embeddings:
+  # The Hugging Face model id.
+  model_name: "Qwen/Qwen3-Embedding-0.6B"
+
+  # The pinned commit of the model repository.
+  model_revision: "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3"
+
+  # Passed as the prompt for queries only (D2). Double-quoted, so \n is a line
+  # feed.
+  query_instruction: "Instruct: Given a question about a contract, permit, register extract or other company document, retrieve the passages that answer the question\nQuery:"
+
+  # Equals the bge-m3 fallback limit, so a model switch never truncates
+  # silently.
+  max_tokens: 8192
+
+  # Documents per encoding batch.
+  batch_size: 16
+
+# ---------------------------------------------------------------------------
+# Interface (spec 009): companydocs-demo, a local browser interface over the
+# answer layer on 127.0.0.1. See src/companydocs_rag/interface/. Every key has
+# a default in Python.
+# ---------------------------------------------------------------------------
+interface:
+  # The port on 127.0.0.1, 1-65535; --port replaces it for a run.
+  port: 8765
+
+  # The resolution of a page view, 50-300 dpi. At 150 dpi an A4 page is
+  # 1240 x 1754 pixels, up to 8.7 MB as a bitmap.
+  render_dpi: 150
+
+  # The longest question, in characters. A full context budget is about
+  # 15,900 characters of messages, about 6,450 tokens at Slovak's 2.47
+  # characters per token; with max_tokens 800 that is about 7,250 of the 8,192
+  # window, which leaves about 940 tokens, about 2,300 characters at 2.47, so
+  # 1000 keeps a margin at the worst measured ratio.
+  max_question_chars: 1000
+
+# ---------------------------------------------------------------------------
+# Answering (spec 007): companydocs-answer, which asks a local LLM through an
+# OpenAI-compatible chat-completions endpoint (Ollama by default) for an
+# answer from the retrieved chunks. See src/companydocs_rag/answering/. Every
+# key has a default in Python. The figures are from probe 007.
+# ---------------------------------------------------------------------------
+answering:
+  # The endpoint's base URL; /chat/completions is appended.
+  base_url: "https://api.anthropic.com/v1"
+
+  # Base tags run with context 4096 and truncate silently (probe 007 A2).
+  model: "claude-fable-5-1"
+
+  # The environment variable holding an API key; null sends no Authorization.
+  api_key_env: COMPANYDOCS_LLM_API_KEY
+
+  # The model's context window, in tokens.
+  context_window: 8192
+
+  # The most tokens the model may generate per answer.
+  max_tokens: 800
+
+  # The sampling temperature.
+  temperature: null
+
+  # The seed sent with every request.
+  seed: 0
+
+  # Reasoning is on by default; reasoning_effort "none" turns it off (probe
+  # 007 A5).
+  reasoning_effort: null
+
+  # keep_alive in the request body persists (probe 007 A6).
+  extra_body: {}
+
+  # Seconds to wait for a connection.
+  connect_timeout_s: 5.0
+
+  # Seconds to wait for reading, writing and a free connection.
+  read_timeout_s: 180.0
+
+  # Whether opening sends one short request, which loads the model.
+  warmup: true
+
+  # The system prompt, relative to the project root unless absolute.
+  prompt_file: "config/prompts/answer_system_nl.txt"
+
+  # fused: the first fused_k candidates; per_path: per_path_k of each leg.
+  selection_mode: "fused"
+
+  # Chunks in fused mode; at most retrieval.candidate_count.
+  fused_k: 20
+
+  # Chunks per leg in per_path mode; at most retrieval.dense_limit and .sparse_limit.
+  per_path_k: 10
+
+  # Characters per prompt token: nld 3.20, deu 3.62, eng 4.25, pol 2.86, ces
+  # 2.49, slk 2.47 (probe 007 A4); the budget assumes the worst.
+  max_context_chars: 15000
+
+  # Above this the prompt was probably cut; see the ratios above max_context_chars.
+  max_chars_per_prompt_token: 4.6
+
+  # Spec-006 run, no-answer query 0.4505; three answered numeric queries
+  # 0.4402-0.4444; the other six 0.5037-0.7919; ten queries, no calibration.
+  min_dense_score: null
+
+  # The folder of the JSONL answer logs, relative to the project root unless absolute.
+  log_dir: "data/processed/answer_logs"
+
+# ---------------------------------------------------------------------------
+# Metadata (spec 008): companydocs-metadata. Its extract subcommand asks a
+# local LLM through an OpenAI-compatible chat-completions endpoint (Ollama by
+# default) for the date and term fields of the lease family; its report
+# subcommand computes the follow-up dates for a reference date. See
+# src/companydocs_rag/metadata/. Every key has a default in Python. The figures
+# are from probe 008.
+# ---------------------------------------------------------------------------
+metadata:
+  # The endpoint's base URL; /chat/completions is appended.
+  base_url: "http://127.0.0.1:11434/v1"
+
+  # The model the requests name; made from config/ollama/ (README).
+  model: "companydocs-gemma4-e4b-8k"
+
+  # The environment variable holding an API key; null sends no Authorization.
+  api_key_env: null
+
+  # The model's context window, in tokens.
+  context_window: 8192
+
+  # Probe 008 Phase B: 1,058-3,673 completion tokens per request with
+  # reasoning_effort "high", reasoning included.
+  max_tokens: 4000
+
+  # The sampling temperature.
+  temperature: 0.0
+
+  # The seed sent with every request.
+  seed: 0
+
+  # Probe 008 Phase B ran every batch once with "none" and twice with "high".
+  reasoning_effort: "high"
+
+  # keep_alive in the request body persists (probe 007 A6); the code adds
+  # response_format.
+  extra_body:
+    keep_alive: "60m"
+
+  # Seconds to wait for a connection.
+  connect_timeout_s: 5.0
+
+  # Probe 008 Phase B: the longest request took 237 s with reasoning_effort
+  # "high".
+  read_timeout_s: 600.0
+
+  # Whether one short request, which loads the model, goes before the first extraction.
+  warmup: true
+
+  # Probe 008 Phase B: 2.94-4.36 characters per prompt token; above this
+  # value the prompt was probably cut (spec 007 D6).
+  max_chars_per_prompt_token: 4.6
+
+  # The system prompt, relative to the project root unless absolute.
+  prompt_file: "config/prompts/metadata_extract_system.txt"
+
+  # The folder of the JSONL extract logs, relative to the project root unless absolute.
+  log_dir: "data/processed/metadata_logs"
+
+  # Probe 008 A6: at 9,000 characters, batch 1 held 43 of 51
+  # ground-truth-draft passages and three batches 47.
+  selection_budget_chars: 9000
+
+  # The most requests per document.
+  max_batches_per_document: 3
+
+  # Document types (override file or client index) whose fields are extracted.
+  lease_family_types:
+    - "Huurovereenkomst"
+    - "Allonge"
+    - "Lease- / exploitatieovereenkomst"
+
+  # Document types that amend another document: no derived dates of their own.
+  amendment_types:
+    - "Allonge"
+
+  # Probe 008 A6.1: stems by document language; infix matches inside a word,
+  # prefix at its start, whole_token the whole word.
+  keywords:
+    nld:
+      infix: [opzeg, opgezegd, termijn, ingang, ingaan, ingaande, aanvang, duur,
+        looptijd, verleng, voortgezet, onbepaalde, aldus, einde]
+      whole_token: [getekend, ondertekend]
+    eng:
+      prefix: [notice, terminat, commence, term, extend, extension, expir,
+        handover, concluded, prolong]
+
+  # Month names by document language, full and abbreviated, for the date bonus.
+  month_names:
+    nld:
+      full: [januari, februari, maart, april, mei, juni, juli, augustus,
+        september, oktober, november, december]
+      abbreviated: [jan, feb, mrt, apr, jun, jul, aug, sep, sept, okt, nov, dec]
+    eng:
+      full: [january, february, march, april, may, june, july, august,
+        september, october, november, december]
+      abbreviated: [jan, feb, mar, apr, jun, jul, aug, sep, sept, oct, nov, dec]
+
+# ---------------------------------------------------------------------------
+# Retrieval (spec 006): BM25 and fusion for companydocs-index and
+# companydocs-search. See src/companydocs_rag/retrieval/search.py. Every key has
+# a default in Python.
+# ---------------------------------------------------------------------------
+retrieval:
+  # Standard value, not measured.
+  bm25_k1: 1.2
+
+  # Standard value, not measured.
+  bm25_b: 0.75
+
+  # Standard value, not measured.
+  rrf_k: 60
+
+  # Not measured.
+  dense_limit: 50
+
+  # Not measured.
+  sparse_limit: 50
+
+  # Not measured.
+  candidate_count: 20
+
+  # The judge route (Rutger's experiment, retrieval/judge.py): none (the baseline) or judge.
+  reranker: none
+
+  # The downloaded d3-lite folder; empty while the judge route is off.
+  judge_model_dir: ""
+
+  # The judge file (LoRA, readout rows, weight edits); empty is the base d3-lite.
+  judge_adapter: ""
+
+  # cpu or cuda:0.
+  judge_device: cpu
+
+  # Not measured on this corpus; the benchmark lab's flat-top 2.
+  judge_documents: 2
+
+  # Not measured; bounds the judgments per question.
+  judge_doc_chunks: 300
+
+  # The text length the judge was fine-tuned on (characters).
+  judge_window_chars: 1600

@@ -48,10 +48,10 @@ Detail: [experiments/rutger/](../experiments/rutger/)
 
 | | |
 |---|---|
-| Topic | _to fill in, e.g. the demo interface (frontend) with a small user test_ |
-| What changed or was tested | |
-| Code / config | |
-| Evaluation outcome | |
-| Conclusion | |
+| Topic | Interface: a workspace that highlights the cited passage on the PDF page, so a user can verify an answer against its source |
+| What changed or was tested | The demo becomes a workspace (side bar, chat view, document library, status block, page viewer next to the chat); the lines of each cited passage are highlighted on the page image by aligning the chunk's text with the page's words (pdfplumber for text pages, Tesseract's word boxes for scans), drawn only when at least 60% of the passage is found. Retrieval, prompt and answers are unchanged. Measured against the baseline interface, which shows the page without a highlight |
+| Code / config | `src/companydocs_rag/interface/highlight.py`, `library.py`, `server.py`, `page.html` and the other interface modules, `tests/interface/` (incl. `test_highlight.py`, `test_library.py`); `answering.temperature: null` for hosted models; `experiments/lucan/measure_highlight.py`, `settings-fable.yaml` |
+| Evaluation outcome | On the 90 answerable questions: a highlight on 465 of 466 answer passages (99.8%; the one without is a 2-word passage) and on at least one answer passage for every question; median 100% of the passage's words found (lowest 95.5%); the user is pointed to a median 7.7% of the page instead of the whole page (baseline 100%); on the retrieved top-5 pages (preview index, 62 questions) a highlight on 100% (`experiments/lucan/highlight_results.md`, `highlight_results.json`) |
+| Conclusion | The highlight works on every answer page in the question set and narrows what the user has to read to about 8% of the page. Limits: text-layer pages only (no scanned answer pages in the set), the alignment compares text from the same extraction and the boxes were not checked visually, and whether users check answers faster was not measured (a user test is the next step) |
 
 Detail: [experiments/lucan/](../experiments/lucan/)
