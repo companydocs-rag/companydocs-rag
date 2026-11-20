@@ -151,6 +151,18 @@ def test_a_null_reasoning_effort_is_left_out(tmp_path):
     ]
 
 
+def test_a_null_temperature_is_left_out(tmp_path):
+    # Hosted models that reject a temperature get a body without the key.
+    generator = Generator()
+    with _open(
+        tmp_path, generator, temperature=None, reasoning_effort=None, extra_body={}
+    ) as answerer:
+        answerer.answer("Fictieve vraag?")
+
+    (body,) = generator.bodies
+    assert list(body) == ["model", "messages", "max_tokens", "seed", "stream"]
+
+
 @pytest.mark.parametrize("field", REQUEST_FIELDS)
 def test_a_request_field_in_extra_body_is_refused(
     tmp_path, monkeypatch, caplog, capsys, field

@@ -162,7 +162,7 @@ INVALID = [
     *_cases(STRING_KEYS, [5, "", None, True]),
     *_cases(["api_key_env", "reasoning_effort"], [5, "", ["x"], True]),
     *_cases(INTEGER_KEYS, ["8192", 2.5, 0, -3, None, True]),
-    *_cases(["temperature"], ["0", -0.5, INF, NAN, None, True]),
+    *_cases(["temperature"], ["0", -0.5, INF, NAN, True]),
     *_cases(["seed"], ["0", 1.5, -1, None, True]),
     *_cases(
         ["extra_body"],
@@ -245,6 +245,7 @@ def test_the_first_invalid_key_in_d12_order_is_reported():
         ("min_dense_score", 1, 1.0),
         ("temperature", 0, 0.0),
         ("temperature", 1.5, 1.5),
+        ("temperature", None, None),
         ("seed", 0, 0),
         ("warmup", False, False),
         ("extra_body", {}, {}),
