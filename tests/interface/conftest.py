@@ -12,6 +12,11 @@ connection, Ollama's port included, fails the test.
 ``tmp_path`` with no warm-up and the answer log there, so no test writes
 under ``data/``. A test that needs other settings writes its own file over
 it.
+
+``no_interim``: ``main``'s default chunk folder and OCR cache for the
+highlighter (spec 011) are folders under ``tmp_path`` that do not exist, so
+no test reads ``data/interim/``. A test that needs them passes
+``chunks_dir`` and ``ocr_cache_dir``.
 """
 
 from __future__ import annotations
@@ -22,6 +27,7 @@ import httpx
 import pytest
 
 from companydocs_rag.ingestion.settings import load_settings
+from companydocs_rag.interface import cli
 from tests.embeddings._helpers import write_settings
 from tests.interface._helpers import HOST, SERVER_PORTS
 
@@ -74,6 +80,16 @@ def no_server(monkeypatch):
     monkeypatch.setattr(socket.socket, "connect_ex", _guarded_connect_ex)
     yield
     SERVER_PORTS.clear()
+
+
+@pytest.fixture(autouse=True)
+def no_interim(tmp_path, monkeypatch):
+    monkeypatch.setattr(
+        cli, "DEFAULT_HIGHLIGHT_CHUNKS_RELATIVE_PATH", tmp_path / "geen-chunks"
+    )
+    monkeypatch.setattr(
+        cli, "DEFAULT_HIGHLIGHT_OCR_CACHE_RELATIVE_PATH", tmp_path / "geen-ocr"
+    )
 
 
 @pytest.fixture(autouse=True)

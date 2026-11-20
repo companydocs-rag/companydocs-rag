@@ -12,7 +12,13 @@ answering. Every response closes its connection (D2) and carries
 Content-Security-Policy (R17).
 
 Routes (R5): ``GET /`` the page; ``POST /vraag`` a question (R6, R7);
-``GET /pagina?sha256=<hash>&nummer=<n>`` a page (R12). Any other ``GET``
+``GET /pagina?sha256=<hash>&nummer=<n>`` a page (R12); and spec 011's two
+read-only views as ``application/json``, built at startup
+(:mod:`.library`): ``GET /documenten`` the library and ``GET /status`` the
+status block; and
+``GET /markering?sha256=<hash>&nummer=<n>&chunk=<id>`` the highlight of a
+cited passage on its page (:mod:`.highlight`), ``{"boxes": [...]}``, empty
+when there is none, 400 for a malformed query. Any other ``GET``
 path is 404 with "Pagina niet gevonden."; any other ``POST`` path is 400
 with "Ongeldig verzoek."; any other method, and every error ``http.server``
 raises before routing, is its own status with "Ongeldig verzoek.". Every
@@ -42,15 +48,26 @@ import threading
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
-from typing import Any, Iterable, Mapping, Optional, Tuple
-from urllib.parse import urlsplit
+from typing import Any, Iterable, Mapping, Optional, Sequence, Tuple
+from urllib.parse import parse_qsl, urlsplit
 
 from companydocs_rag.answering.answerer import GeneratorUnavailableError
 
 from . import texts
 from .fragments import message_fragment, result_fragment
+from .highlight import CHUNK_ID_PATTERN
 from .htmlpage import Page
-from .pageview import PAGE_PATH, PageRefused, page_url, parse_page_query, render_png
+from .pageview import (
+    PAGE_NUMBER_PATTERN,
+    PAGE_PATH,
+    PARAM_PAGE,
+    PARAM_SHA256,
+    SHA256_PATTERN,
+    PageRefused,
+    page_url,
+    parse_page_query,
+    render_png,
+)
 from .settings import InterfaceSettings
 
 logger = logging.getLogger(__name__)
@@ -58,6 +75,10 @@ logger = logging.getLogger(__name__)
 HOST = "127.0.0.1"
 ROOT_PATH = "/"
 QUESTION_PATH = "/vraag"
+LIBRARY_PATH = "/documenten"
+STATUS_PATH = "/status"
+HIGHLIGHT_PATH = "/markering"
+PARAM_CHUNK = "chunk"
 QUESTION_KEY = "vraag"
 # Q8: an idle connection holds the server at most this long.
 IDLE_TIMEOUT_S = 2.0
@@ -70,6 +91,7 @@ CONTENT_TYPE_HTML = "text/html; charset=utf-8"
 CONTENT_TYPE_TEXT = "text/plain; charset=utf-8"
 CONTENT_TYPE_PNG = "image/png"
 CONTENT_TYPE_JSON = "application/json"
+CONTENT_TYPE_JSON_RESPONSE = "application/json; charset=utf-8"
 
 STATUS_OK = 200
 STATUS_BAD_REQUEST = 400
@@ -105,12 +127,17 @@ def parse_question(body: bytes) -> Optional[str]:
 
 
 class DemoApp:
-    """What the requests need (D3, R6, R7, R12).
+    """What the requests need (D3, R6, R7, R12; spec 011).
 
     The answer counter, the ``<a>`` of the card ids (R10), starts at the
     time the app is built, in whole milliseconds since the Unix epoch, and
     goes up by one per answer the answerer returned, so that ids from two
     server runs do not coincide in a page left open across a restart (M1).
+
+    ``library`` and ``status`` are spec 011's views (:mod:`.library`),
+    encoded once here; left out, the library and the status are empty.
+    ``highlighter`` gives the highlights (:mod:`.highlight`); left out,
+    there are none.
     """
 
     def __init__(
@@ -120,12 +147,21 @@ class DemoApp:
         types: Mapping[str, Optional[str]],
         settings: InterfaceSettings,
         page: Page,
+        *,
+        library: Sequence[Mapping[str, Any]] = (),
+        status: Optional[Mapping[str, Any]] = None,
+        highlighter: Any = None,
     ) -> None:
         self.answerer = answerer
+        self.highlighter = highlighter
         self.files = files
         self.types = types
         self.settings = settings
         self.page = page
+        self.views = {
+            LIBRARY_PATH: _json({"documents": list(library)}),
+            STATUS_PATH: _json(status if status is not None else {}),
+        }
         self._next_answer = time.time_ns() // _NS_PER_MS
 
     def question(self, question: str) -> Tuple[int, bytes]:
@@ -160,6 +196,45 @@ class DemoApp:
     def page_png(self, file_sha256: str, page: int) -> bytes:
         """The PNG of one page; raises :class:`PageRefused` (R12)."""
         return render_png(self.files, file_sha256, page, self.settings.render_dpi)
+
+    def highlight(self, file_sha256: str, page: int, chunk_id: str) -> bytes:
+        """The highlight of one chunk on one page as JSON; no boxes without
+        a highlighter or when computing them fails."""
+        boxes: Any = []
+        if self.highlighter is not None:
+            try:
+                boxes = self.highlighter.boxes(file_sha256, page, chunk_id)
+            except Exception:
+                logger.exception("Exception while computing a highlight")
+                boxes = []
+        return _json({"boxes": boxes})
+
+
+def parse_highlight_query(query: str) -> Optional[Tuple[str, int, str]]:
+    """The hash, page number and chunk id of a highlight request, or None
+    when it does not hold exactly ``sha256``, ``nummer`` and ``chunk``, each
+    once, matching their patterns."""
+    pairs = parse_qsl(query, keep_blank_values=True)
+    names = sorted(name for name, _ in pairs)
+    if names != sorted((PARAM_SHA256, PARAM_PAGE, PARAM_CHUNK)):
+        return None
+    values = dict(pairs)
+    file_sha256, page, chunk_id = (
+        values[PARAM_SHA256],
+        values[PARAM_PAGE],
+        values[PARAM_CHUNK],
+    )
+    if (
+        SHA256_PATTERN.fullmatch(file_sha256) is None
+        or PAGE_NUMBER_PATTERN.fullmatch(page) is None
+        or CHUNK_ID_PATTERN.fullmatch(chunk_id) is None
+    ):
+        return None
+    return file_sha256, int(page), chunk_id
+
+
+def _json(value: Any) -> bytes:
+    return json.dumps(value, ensure_ascii=False).encode(_ENCODING, errors="replace")
 
 
 def _encoded(fragment: str) -> bytes:
@@ -213,6 +288,20 @@ class DemoHandler(BaseHTTPRequestHandler):
             )
         elif url.path == PAGE_PATH:
             self._page(url.query)
+        elif url.path == HIGHLIGHT_PATH:
+            parsed = parse_highlight_query(url.query)
+            if parsed is None:
+                self._text(STATUS_BAD_REQUEST, texts.MALFORMED_REQUEST)
+            else:
+                self._respond(
+                    STATUS_OK,
+                    CONTENT_TYPE_JSON_RESPONSE,
+                    self.server.app.highlight(*parsed),
+                )
+        elif url.path in self.server.app.views:
+            self._respond(
+                STATUS_OK, CONTENT_TYPE_JSON_RESPONSE, self.server.app.views[url.path]
+            )
         else:
             self._text(STATUS_NOT_FOUND, texts.PAGE_NOT_FOUND)
 

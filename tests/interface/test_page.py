@@ -77,9 +77,9 @@ def test_the_page_is_utf8_html_in_dutch_with_d16s_texts(page):
     assert [m.attrs.get("charset") for m in tree.find_all("meta")].count("utf-8") == 1
     (textarea,) = tree.find_all("textarea")
     assert textarea.attrs["placeholder"] == texts.INPUT_PLACEHOLDER
-    assert tree.find("button").text() == texts.BUTTON
-    assert tree.find("p", "toelichting").text() == texts.UNDER_INPUT
     form = tree.find("form")
+    assert form.find("button").text() == texts.BUTTON
+    assert tree.find("p", "toelichting").text() == texts.UNDER_INPUT
     assert form.attrs["data-bezig"] == texts.BUSY
     assert form.attrs["data-serverfout"] == texts.SERVER_ERROR
     assert "action" not in form.attrs

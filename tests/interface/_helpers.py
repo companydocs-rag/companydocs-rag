@@ -257,10 +257,15 @@ class Running:
 
 @contextlib.contextmanager
 def running_server(
-    answerer: Any, raw_dir: Path, *, type_overrides: Optional[Path] = None
+    answerer: Any,
+    raw_dir: Path,
+    *,
+    type_overrides: Optional[Path] = None,
+    **views: Any,
 ) -> Iterator[Running]:
     """The server on 127.0.0.1 in a thread, built as ``main`` builds it, with
-    ``answerer``; the settings are read from the test's settings file."""
+    ``answerer``; the settings are read from the test's settings file.
+    ``views`` are spec 011's ``library``, ``status`` and ``highlighter``."""
     overrides_path = (
         type_overrides
         if type_overrides is not None
@@ -270,7 +275,9 @@ def running_server(
     types = document_types(files, read_type_overrides(overrides_path))
     port = free_port()
     server = DemoServer(port)
-    server.app = DemoApp(answerer, files, types, interface_settings(), build_page())
+    server.app = DemoApp(
+        answerer, files, types, interface_settings(), build_page(), **views
+    )
     stop = threading.Event()
     errors: List[BaseException] = []
 

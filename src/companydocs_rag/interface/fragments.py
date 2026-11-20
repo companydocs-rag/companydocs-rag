@@ -21,7 +21,9 @@ separated by commas with optional spaces, ``]``. Each number that has a card
 on this answer links to that card; everything else stays text.
 
 Card ids are ``bron-<a>-<n>``, with ``<a>`` the server's answer counter and
-``<n>`` the source's number.
+``<n>`` the source's number. A card whose ``chunk_id`` matches
+:data:`.highlight.CHUNK_ID_PATTERN` carries it as ``data-chunk``, so that
+the page can ask for the passage's highlight (spec 011).
 """
 
 from __future__ import annotations
@@ -51,6 +53,7 @@ from companydocs_rag.ingestion.quality import (
 )
 
 from . import texts
+from .highlight import CHUNK_ID_PATTERN
 from .pageview import SHA256_PATTERN, is_page_number, page_url
 
 CLASS_EXCHANGE = "uitwisseling"
@@ -213,8 +216,15 @@ def card_html(
         else None
     )
     document_type = types.get(mapped) if mapped is not None else None
+    chunk_id = source.get("chunk_id")
+    chunk = (
+        f' data-chunk="{chunk_id}"'
+        if isinstance(chunk_id, str)
+        and CHUNK_ID_PATTERN.fullmatch(chunk_id) is not None
+        else ""
+    )
     parts = [
-        f'<div class="{CLASS_CARD}" id="{card_id(answer_number, number)}">',
+        f'<div class="{CLASS_CARD}" id="{card_id(answer_number, number)}"{chunk}>',
         f'<div class="{CLASS_CARD_HEAD}">',
         f'<span class="{CLASS_CARD_NUMBER}">[{escape(str(number))}]</span> ',
         f'<span class="{CLASS_CARD_TYPE}">',

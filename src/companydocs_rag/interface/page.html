@@ -6,17 +6,15 @@
 <title>{{titel}}</title>
 <style>
 :root {
-  --achtergrond: #f6f6f4;
-  --vlak: #ffffff;
-  --tekst: #1f2328;
-  --zacht: #5b6470;
-  --rand: #dcdcd6;
-  --accent: #2f5d8a;
-  --vraag: #e7edf4;
-  --onvoldoende: #fff4e0;
-  --onvoldoende-rand: #c98316;
-  --ongeciteerd: #fbe9e9;
-  --ongeciteerd-rand: #b8382b;
+  --wit: #ffffff;
+  --vlak: #f7f7f7;
+  --vlak-2: #efefef;
+  --tekst: #111111;
+  --zacht: #666666;
+  --zachter: #8a8a8a;
+  --rand: #e2e2e2;
+  --rand-sterk: #111111;
+  --schaduw: 0 1px 3px rgba(0, 0, 0, 0.18);
 }
 * {
   box-sizing: border-box;
@@ -27,33 +25,246 @@ body {
   margin: 0;
 }
 body {
-  display: flex;
-  flex-direction: column;
-  background: var(--achtergrond);
+  background: var(--wit);
   color: var(--tekst);
   font-family: system-ui, sans-serif;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.5;
+  overflow: hidden;
 }
-header {
-  padding: 12px 16px;
+button,
+input,
+textarea {
+  color: inherit;
+  font: inherit;
+}
+[hidden] {
+  display: none !important;
+}
+
+/* --- Layout ------------------------------------------------------------- */
+.app {
+  display: grid;
+  grid-template-columns: 236px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  height: 100%;
+}
+/* Rows of minmax(0, 1fr) keep a tall page image from growing the layout
+   past the window; the panes scroll instead. */
+.werkvlak {
+  display: grid;
+  grid-template-columns: minmax(340px, 1fr) 6px minmax(340px, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+}
+.paneel {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+.weergave {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+.kopbalk {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 56px;
+  padding: 0 20px;
   border-bottom: 1px solid var(--rand);
+}
+.kopbalk h2 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 650;
+}
+.knop {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+  background: var(--wit);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.knop:hover {
+  border-color: var(--rand-sterk);
+}
+.knop-donker {
+  border-color: var(--rand-sterk);
+  background: var(--tekst);
+  color: var(--wit);
+}
+.knop-donker:hover {
+  background: #333333;
+}
+
+/* --- Side bar ----------------------------------------------------------- */
+.zijbalk {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-height: 0;
+  overflow: hidden;
+  padding: 16px 12px;
+  border-right: 1px solid var(--rand);
   background: var(--vlak);
 }
-header h1 {
-  max-width: 820px;
-  margin: 0 auto;
-  font-size: 1.05rem;
+.merk {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 2px 6px;
+}
+.merk-logo {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--tekst);
+  color: var(--wit);
+  font-weight: 700;
+}
+.merk-naam {
+  display: block;
+  font-weight: 650;
+  line-height: 1.2;
+}
+.merk-sub,
+.klein {
+  display: block;
+  color: var(--zacht);
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+.navigatie {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nav-knop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+.nav-knop:hover {
+  background: var(--vlak-2);
+}
+.nav-knop.actief {
+  background: var(--wit);
+  box-shadow: inset 0 0 0 1px var(--rand-sterk);
   font-weight: 600;
 }
-main {
+.teller {
+  min-width: 22px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: var(--vlak-2);
+  color: var(--zacht);
+  font-size: 0.75rem;
+  text-align: center;
+}
+.zijbalk-voet {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: auto;
+}
+.status {
+  padding: 10px;
+  border: 1px solid var(--rand);
+  border-radius: 10px;
+  background: var(--wit);
+  font-size: 0.82rem;
+}
+.status-kop {
+  margin: 0 0 4px;
+  color: var(--zachter);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.status-modus {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.status-modus::before {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tekst);
+  content: "";
+}
+.status-regel {
+  color: var(--zacht);
+  overflow-wrap: anywhere;
+}
+.account {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 6px 0;
+  border-top: 1px solid var(--rand);
+}
+.avatar {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--rand-sterk);
+  border-radius: 50%;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+.account strong {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+/* --- Chat --------------------------------------------------------------- */
+.berichten {
   flex: 1;
   overflow-y: auto;
-  padding: 24px 16px 8px;
+  padding: 20px 20px 8px;
 }
-.kolom {
-  max-width: 820px;
-  margin: 0 auto;
+.leeg {
+  max-width: 460px;
+  margin: 12vh auto 0;
+  color: var(--zacht);
+  text-align: center;
+}
+.leeg h3 {
+  margin: 0 0 6px;
+  color: var(--tekst);
+  font-size: 1.1rem;
+}
+.leeg p {
+  margin: 0;
 }
 .uitwisseling {
   margin: 0 0 28px;
@@ -62,9 +273,10 @@ main {
   width: fit-content;
   max-width: 85%;
   margin-left: auto;
-  padding: 10px 14px;
-  border-radius: 16px;
-  background: var(--vraag);
+  padding: 9px 14px;
+  border-radius: 14px;
+  background: var(--tekst);
+  color: var(--wit);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -86,26 +298,34 @@ main {
 .banner {
   margin-bottom: 10px;
   padding: 8px 12px;
-  border-left: 4px solid;
-  border-radius: 6px;
+  border-radius: 8px;
   font-weight: 600;
 }
 .banner-onvoldoende {
-  border-color: var(--onvoldoende-rand);
-  background: var(--onvoldoende);
+  border-left: 4px solid var(--rand-sterk);
+  background: var(--vlak-2);
 }
 .banner-ongeciteerd {
-  border-color: var(--ongeciteerd-rand);
-  background: var(--ongeciteerd);
+  border: 1px dashed var(--rand-sterk);
+  background: var(--wit);
 }
 .citaat {
-  color: var(--accent);
-  font-weight: 600;
+  display: inline-block;
+  min-width: 20px;
+  padding: 0 4px;
+  border: 1px solid var(--rand-sterk);
+  border-radius: 4px;
+  color: var(--tekst);
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.35;
+  text-align: center;
   text-decoration: none;
 }
 .citaat:hover,
 .citaat:focus {
-  text-decoration: underline;
+  background: var(--tekst);
+  color: var(--wit);
 }
 .bronnen {
   margin-top: 16px;
@@ -113,21 +333,28 @@ main {
 .bronnen-kop {
   margin: 0 0 8px;
   color: var(--zacht);
-  font-size: 0.95rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 .bron {
   margin-bottom: 8px;
   padding: 10px 14px;
   border: 1px solid var(--rand);
   border-radius: 10px;
-  background: var(--vlak);
+  background: var(--wit);
+  cursor: pointer;
 }
-.bron:target {
-  border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px var(--accent);
+.bron:hover {
+  border-color: var(--zachter);
+}
+.bron:target,
+.bron.actief {
+  border-color: var(--rand-sterk);
+  box-shadow: inset 0 0 0 1px var(--rand-sterk);
 }
 .bron-nummer {
-  color: var(--accent);
   font-weight: 700;
 }
 .bron-type {
@@ -136,6 +363,7 @@ main {
 .bron-bestand,
 .bron-hint {
   color: var(--zacht);
+  font-size: 0.88rem;
   overflow-wrap: anywhere;
 }
 .bron-hint {
@@ -144,83 +372,1044 @@ main {
 .bron-paginas {
   margin: 6px 0 0;
   padding: 0;
+  font-size: 0.88rem;
   list-style: none;
 }
 .paginanummer {
   font-weight: 600;
 }
+.herkomst {
+  color: var(--zacht);
+}
 .paginalink {
   margin-left: 6px;
-  color: var(--accent);
+  color: var(--tekst);
+  font-weight: 600;
 }
-footer {
-  padding: 12px 16px 10px;
+.invoer {
+  flex: none;
+  padding: 12px 20px 12px;
   border-top: 1px solid var(--rand);
-  background: var(--vlak);
 }
 form {
   display: flex;
   gap: 8px;
-  max-width: 820px;
-  margin: 0 auto;
 }
 textarea {
   flex: 1;
-  min-height: 48px;
+  min-height: 46px;
   max-height: 200px;
   padding: 10px 12px;
   border: 1px solid var(--rand);
-  border-radius: 12px;
-  font: inherit;
+  border-radius: 10px;
   resize: vertical;
 }
-button {
-  padding: 0 18px;
+textarea:focus,
+.zoekveld:focus,
+.pagina-invoer:focus {
+  border-color: var(--rand-sterk);
+  outline: none;
+}
+#verstuur {
+  padding: 0 16px;
   border: none;
-  border-radius: 12px;
-  background: var(--accent);
-  color: #ffffff;
-  font: inherit;
+  border-radius: 10px;
+  background: var(--tekst);
+  color: var(--wit);
   cursor: pointer;
 }
 textarea:disabled,
-button:disabled {
-  opacity: 0.6;
+#verstuur:disabled {
+  opacity: 0.55;
   cursor: default;
 }
 .toelichting {
-  max-width: 820px;
-  margin: 6px auto 0;
+  margin: 6px 0 0;
   color: var(--zacht);
-  font-size: 0.85rem;
+  font-size: 0.8rem;
+}
+
+/* --- Documents ---------------------------------------------------------- */
+.werkbalk {
+  display: flex;
+  flex: none;
+  gap: 8px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--rand);
+}
+.zoekveld {
+  flex: 1;
+  height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+}
+.dummy {
+  position: relative;
+}
+.dummy .knop {
+  color: var(--zachter);
+  border-style: dashed;
+  cursor: not-allowed;
+}
+.uitleg {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 300px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--tekst);
+  box-shadow: var(--schaduw);
+  color: var(--wit);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.12s;
+}
+.dummy:hover .uitleg,
+.dummy:focus-within .uitleg {
+  visibility: visible;
+  opacity: 1;
+}
+.lijst {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 12px 16px;
+}
+.map > summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  list-style: none;
+}
+.map > summary::-webkit-details-marker {
+  display: none;
+}
+.map > summary::before {
+  width: 0;
+  height: 0;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 6px solid var(--tekst);
+  content: "";
+  transition: transform 0.1s;
+}
+.map[open] > summary::before {
+  transform: rotate(90deg);
+}
+.map > summary:hover {
+  background: var(--vlak);
+}
+.map-inhoud {
+  margin-left: 14px;
+  padding-left: 8px;
+  border-left: 1px solid var(--rand);
+}
+.map-teller {
+  color: var(--zachter);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+.document-rij {
+  display: block;
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+.document-rij:hover {
+  background: var(--vlak);
+}
+.document-rij.actief {
+  background: var(--vlak-2);
+  box-shadow: inset 2px 0 0 var(--rand-sterk);
+}
+.document-naam {
+  display: block;
+  overflow-wrap: anywhere;
+}
+.document-meta {
+  display: block;
+  color: var(--zacht);
+  font-size: 0.8rem;
+}
+.lijst-leeg {
+  padding: 16px 8px;
+  color: var(--zacht);
+}
+
+/* --- Chat history and projects ----------------------------------------- */
+.geschiedenis {
+  flex: 1;
+  min-height: 0;
+  margin: 0 -6px;
+  padding: 0 6px;
+  overflow-y: auto;
+}
+.sectie-kop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px 4px 4px 10px;
+  color: var(--zachter);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.mini {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--zacht);
+  cursor: pointer;
+  font-size: 0.95rem;
+  line-height: 1;
+}
+.mini:hover {
+  background: var(--vlak-2);
+  color: var(--tekst);
+}
+.rij {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-right: 2px;
+  border-radius: 8px;
+}
+.rij:hover {
+  background: var(--vlak-2);
+}
+.rij.actief {
+  background: var(--wit);
+  box-shadow: inset 0 0 0 1px var(--rand-sterk);
+}
+.rij.sleepdoel {
+  box-shadow: inset 0 0 0 1px var(--rand-sterk);
+  background: var(--wit);
+}
+.rij-knop {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 10px;
+  overflow: hidden;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.88rem;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rij .mini {
+  visibility: hidden;
+}
+.rij:hover .mini,
+.rij:focus-within .mini,
+.rij.actief .mini {
+  visibility: visible;
+}
+.project-kop .rij-knop {
+  font-weight: 600;
+}
+.project-kop .rij-knop::before {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-right: 7px;
+  vertical-align: 1px;
+  border-top: 4px solid transparent;
+  border-bottom: 4px solid transparent;
+  border-left: 6px solid var(--tekst);
+  content: "";
+  transition: transform 0.1s;
+}
+.project.open > .project-kop .rij-knop::before {
+  transform: rotate(90deg);
+}
+.project-chats {
+  margin: 0 0 4px 14px;
+  padding-left: 6px;
+  border-left: 1px solid var(--rand);
+}
+.project-leeg,
+.geen-chats {
+  margin: 2px 0 6px;
+  padding: 2px 10px;
+  color: var(--zachter);
+  font-size: 0.8rem;
+}
+.losse-chats.sleepdoel {
+  border-radius: 8px;
+  box-shadow: inset 0 0 0 1px var(--rand-sterk);
+}
+.losse-chats {
+  min-height: 24px;
+}
+.naam-invoer {
+  width: 100%;
+  height: 30px;
+  margin: 2px 0;
+  padding: 0 8px;
+  border: 1px solid var(--rand-sterk);
+  border-radius: 6px;
+  background: var(--wit);
+  font-size: 0.88rem;
+}
+.geschiedenis-noot {
+  margin: 10px 10px 4px;
+  color: var(--zachter);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+.menu {
+  position: fixed;
+  z-index: 30;
+  min-width: 200px;
+  max-width: 260px;
+  padding: 4px;
+  border: 1px solid var(--rand);
+  border-radius: 8px;
+  background: var(--wit);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.16);
+}
+.menu button {
+  display: block;
+  width: 100%;
+  padding: 6px 10px;
+  overflow: hidden;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.88rem;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.menu button:hover,
+.menu button:focus {
+  background: var(--vlak);
+  outline: none;
+}
+.menu-kop {
+  padding: 8px 10px 2px;
+  color: var(--zachter);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.menu-scheiding {
+  height: 1px;
+  margin: 4px 6px;
+  background: var(--rand);
+}
+.kop-titel {
+  min-width: 0;
+}
+.kop-titel h2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- Divider ------------------------------------------------------------ */
+.scheiding {
+  position: relative;
+  background: var(--wit);
+  cursor: col-resize;
+}
+.scheiding::after {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 2px;
+  width: 1px;
+  background: var(--rand);
+  content: "";
+}
+.scheiding:hover::after,
+.scheiding.slepen::after {
+  left: 1px;
+  width: 3px;
+  background: var(--rand-sterk);
+}
+
+/* --- Viewer ------------------------------------------------------------- */
+.viewer {
+  background: var(--vlak);
+}
+.viewer-kop {
+  display: flex;
+  flex: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-height: 56px;
+  padding: 8px 14px 8px 18px;
+  border-bottom: 1px solid var(--rand);
+  background: var(--wit);
+}
+.viewer-titel {
+  min-width: 0;
+}
+.viewer-naam {
+  display: block;
+  overflow: hidden;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.viewer-acties {
+  display: flex;
+  flex: none;
+  gap: 6px;
+}
+.viewer-acties a {
+  color: var(--tekst);
+  text-decoration: none;
+}
+.viewer-balk {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 14px;
+  border-bottom: 1px solid var(--rand);
+  background: var(--wit);
+  font-size: 0.88rem;
+}
+.groep {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.ikoon {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--rand);
+  border-radius: 6px;
+  background: var(--wit);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+}
+.ikoon:hover:not(:disabled) {
+  border-color: var(--rand-sterk);
+}
+.ikoon:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.pagina-invoer {
+  width: 52px;
+  height: 30px;
+  padding: 0 6px;
+  border: 1px solid var(--rand);
+  border-radius: 6px;
+  text-align: center;
+}
+.zoom-waarde {
+  min-width: 44px;
+  text-align: center;
+}
+.chip {
+  padding: 2px 8px;
+  border: 1px solid var(--rand-sterk);
+  border-radius: 10px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.viewer-vlak {
+  position: relative;
+  flex: 1;
+  overflow: auto;
+  padding: 20px;
+  text-align: center;
+}
+.pagina-houder {
+  position: relative;
+  display: inline-block;
+  vertical-align: top;
+  background: var(--wit);
+  box-shadow: var(--schaduw);
+}
+.pagina-houder img {
+  display: block;
+  width: 100%;
+}
+/* The one colour of the interface: a highlighter over the passage the
+   model read. */
+.markering {
+  position: absolute;
+  border-radius: 2px;
+  background: rgba(255, 214, 0, 0.45);
+  mix-blend-mode: multiply;
+  pointer-events: none;
+}
+.chip-geel::before {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 5px;
+  border-radius: 2px;
+  background: rgba(255, 214, 0, 0.8);
+  content: "";
+  vertical-align: -1px;
+}
+.viewer-melding {
+  margin-top: 30px;
+  color: var(--zacht);
+}
+.viewer-leeg {
+  display: grid;
+  flex: 1;
+  place-items: center;
+  padding: 24px;
+  color: var(--zacht);
+  text-align: center;
+}
+.viewer-leeg h3 {
+  margin: 0 0 6px;
+  color: var(--tekst);
+  font-size: 1.05rem;
+}
+.viewer-leeg p {
+  max-width: 340px;
+  margin: 0;
+}
+.papier {
+  width: 54px;
+  height: 70px;
+  margin: 0 auto 14px;
+  border: 1px solid var(--zachter);
+  border-radius: 3px;
+  background: repeating-linear-gradient(
+    to bottom,
+    var(--wit) 0,
+    var(--wit) 10px,
+    var(--vlak-2) 10px,
+    var(--vlak-2) 12px
+  );
+}
+
+/* --- Small screens ------------------------------------------------------ */
+@media (max-width: 960px) {
+  body {
+    overflow: auto;
+  }
+  .app {
+    display: block;
+    height: auto;
+  }
+  .zijbalk {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    border-right: none;
+    border-bottom: 1px solid var(--rand);
+  }
+  .navigatie {
+    flex-direction: row;
+  }
+  .zijbalk-voet,
+  .geschiedenis {
+    display: none;
+  }
+  .werkvlak {
+    display: block;
+    height: auto;
+  }
+  .paneel {
+    height: 80vh;
+  }
+  .scheiding {
+    display: none;
+  }
 }
 </style>
 </head>
-<body>
-<header><h1>{{titel}}</h1></header>
-<main><div class="kolom" id="uitwisselingen"></div></main>
-<footer>
+<body data-laden="{{laden}}" data-niet-gevonden="{{niet_gevonden}}">
+<div class="app">
+
+<aside class="zijbalk">
+<div class="merk">
+<span class="merk-logo" aria-hidden="true">V</span>
+<div><span class="merk-naam">{{merk}}</span><span class="merk-sub">{{merk_sub}}</span></div>
+</div>
+<nav class="navigatie">
+<button type="button" class="nav-knop" data-weergave="documenten">{{nav_documenten}} <span class="teller" id="documenten-teller"></span></button>
+<button type="button" class="nav-knop" id="nieuwe-chat">{{nieuwe_chat}} <span class="teller" aria-hidden="true">+</span></button>
+</nav>
+<div class="geschiedenis" id="geschiedenis" data-nieuwe-chat="{{nieuwe_chat}}" data-opties="{{opties}}" data-naam-wijzigen="{{naam_wijzigen}}" data-verplaatsen="{{verplaatsen}}" data-geen-project="{{geen_project}}" data-verwijderen="{{verwijderen}}" data-nieuwe-chat-project="{{nieuwe_chat_project}}" data-bevestig-chat="{{bevestig_chat}}" data-bevestig-project="{{bevestig_project}}" data-project-leeg="{{project_leeg}}">
+<div class="sectie-kop"><span>{{projecten}}</span><button type="button" class="mini" id="nieuw-project" title="{{nieuw_project}}" aria-label="{{nieuw_project}}">+</button></div>
+<input type="text" class="naam-invoer" id="project-naam" placeholder="{{project_naam}}" aria-label="{{project_naam}}" maxlength="60" hidden>
+<div id="projecten"></div>
+<div class="sectie-kop"><span>{{chats}}</span></div>
+<div class="losse-chats" id="chats"></div>
+<p class="geen-chats" id="geen-chats">{{geen_chats}}</p>
+<p class="geschiedenis-noot">{{geschiedenis_noot}}</p>
+</div>
+<div class="zijbalk-voet">
+<div class="status">
+<p class="status-kop">{{status_kop}}</p>
+<div class="status-modus" id="status-modus">-</div>
+<div class="status-regel" id="status-model"></div>
+<div class="status-regel" id="status-host"></div>
+<div class="status-regel" id="status-documenten"></div>
+</div>
+<div class="account">
+<span class="avatar" aria-hidden="true">{{account_initialen}}</span>
+<div><strong>{{account_naam}}</strong><span class="klein">{{account_sub}}</span></div>
+</div>
+</div>
+</aside>
+
+<main class="werkvlak" id="werkvlak">
+<section class="paneel">
+
+<div class="weergave" id="weergave-chat">
+<div class="kopbalk"><div class="kop-titel"><span class="klein" id="chat-project"></span><h2 id="chat-titel">{{nieuwe_chat}}</h2></div></div>
+<div class="berichten" id="berichten">
+<div class="leeg" id="leeg-chat"><h3>{{leeg_titel}}</h3><p>{{leeg_tekst}}</p></div>
+<div id="uitwisselingen"></div>
+</div>
+<div class="invoer">
 <form id="vraagformulier" data-bezig="{{bezig}}" data-serverfout="{{serverfout}}">
 <textarea id="vraag" rows="2" placeholder="{{invoertekst}}" aria-label="{{invoertekst}}"></textarea>
 <button type="submit" id="verstuur">{{knop}}</button>
 </form>
 <p class="toelichting">{{toelichting}}</p>
-</footer>
+</div>
+</div>
+
+<div class="weergave" id="weergave-documenten" hidden>
+<div class="kopbalk"><h2>{{nav_documenten}}</h2>
+<span class="dummy"><button type="button" class="knop" aria-disabled="true" aria-describedby="upload-uitleg">{{upload}}</button><span class="uitleg" id="upload-uitleg" role="tooltip">{{upload_uitleg}}</span></span>
+</div>
+<div class="werkbalk"><input type="search" class="zoekveld" id="zoek" placeholder="{{zoek}}" aria-label="{{zoek}}"></div>
+<div class="lijst" id="documentenlijst"></div>
+<p class="lijst-leeg" id="geen-documenten" hidden>{{geen_documenten}}</p>
+</div>
+
+</section>
+
+<div class="scheiding" id="scheiding" role="separator" aria-orientation="vertical" title="{{sleep}}"></div>
+
+<section class="paneel viewer" id="viewer">
+<div class="viewer-leeg" id="viewer-leeg">
+<div><div class="papier" aria-hidden="true"></div><h3>{{viewer_leeg_titel}}</h3><p>{{viewer_leeg_tekst}}</p></div>
+</div>
+<div class="weergave" id="viewer-document" hidden>
+<div class="viewer-kop">
+<div class="viewer-titel"><span class="viewer-naam" id="viewer-naam"></span><span class="klein" id="viewer-type"></span></div>
+<div class="viewer-acties">
+<a class="knop" id="viewer-tabblad" href="/" target="_blank" rel="noopener noreferrer">{{nieuw_tabblad}}</a>
+<button type="button" class="knop" id="viewer-sluiten">{{sluiten}}</button>
+</div>
+</div>
+<div class="viewer-balk">
+<span class="groep">
+<button type="button" class="ikoon" id="vorige" title="{{vorige}}" aria-label="{{vorige}}">&lsaquo;</button>
+<input type="number" class="pagina-invoer" id="pagina" min="1" aria-label="{{paginanummer}}">
+<span id="pagina-totaal"></span>
+<button type="button" class="ikoon" id="volgende" title="{{volgende}}" aria-label="{{volgende}}">&rsaquo;</button>
+</span>
+<span class="groep">
+<button type="button" class="ikoon" id="uitzoomen" title="{{uitzoomen}}" aria-label="{{uitzoomen}}">&minus;</button>
+<span class="zoom-waarde" id="zoom-waarde">100%</span>
+<button type="button" class="ikoon" id="inzoomen" title="{{inzoomen}}" aria-label="{{inzoomen}}">+</button>
+<button type="button" class="knop" id="passend">{{passend}}</button>
+</span>
+<span class="chip" id="geciteerd" hidden>{{geciteerd}}</span>
+<span class="chip chip-geel" id="markering-legenda" hidden>{{markering}}</span>
+</div>
+<div class="viewer-vlak" id="viewer-vlak">
+<p class="viewer-melding" id="viewer-melding"></p>
+<div class="pagina-houder" id="pagina-houder" hidden><img id="viewer-pagina" alt=""><div id="markeringen"></div></div>
+</div>
+</div>
+</section>
+</main>
+
+</div>
 <script>
 (function () {
   "use strict";
+  var HASH = /^[0-9a-f]{64}$/;
+  var PAGE = /^[1-9][0-9]{0,5}$/;
+  var CHUNK = /^[0-9a-f]{8,64}$/;
+  var ZOOM_STEPS = [0.5, 0.67, 0.8, 1, 1.25, 1.5, 2, 2.5, 3];
+  var WIDTH_KEY = "companydocs-paneelbreedte";
+
+  var body = document.body;
   var form = document.getElementById("vraagformulier");
   var input = document.getElementById("vraag");
   var button = document.getElementById("verstuur");
   var list = document.getElementById("uitwisselingen");
+  var messages = document.getElementById("berichten");
+  var emptyChat = document.getElementById("leeg-chat");
   var busyText = form.getAttribute("data-bezig");
   var failText = form.getAttribute("data-serverfout");
+  var loadingText = body.getAttribute("data-laden");
+  var notFoundText = body.getAttribute("data-niet-gevonden");
   var running = false;
+  var documents = {};
 
+  function byId(id) {
+    return document.getElementById(id);
+  }
+
+  function element(tag, className, text) {
+    var node = document.createElement(tag);
+    if (className) {
+      node.className = className;
+    }
+    if (text !== undefined && text !== null) {
+      node.textContent = text;
+    }
+    return node;
+  }
+
+  function clear(node) {
+    while (node.firstChild) {
+      node.removeChild(node.firstChild);
+    }
+  }
+
+  function getJson(path) {
+    return fetch(path).then(function (response) {
+      if (response.status !== 200) {
+        throw new Error("status " + response.status);
+      }
+      return response.json();
+    });
+  }
+
+  // --- Views -------------------------------------------------------------
+  var navButtons = document.querySelectorAll(".nav-knop[data-weergave]");
+  var views = {
+    chat: byId("weergave-chat"),
+    documenten: byId("weergave-documenten")
+  };
+  var shown = "chat";
+
+  function show(name) {
+    shown = name;
+    Object.keys(views).forEach(function (key) {
+      views[key].hidden = key !== name;
+    });
+    Array.prototype.forEach.call(navButtons, function (nav) {
+      var active = nav.getAttribute("data-weergave") === name;
+      nav.classList.toggle("actief", active);
+      if (active) {
+        nav.setAttribute("aria-current", "page");
+      } else {
+        nav.removeAttribute("aria-current");
+      }
+    });
+    renderHistory();
+    if (name === "chat" && !running) {
+      input.focus();
+    }
+  }
+
+  Array.prototype.forEach.call(navButtons, function (nav) {
+    nav.addEventListener("click", function () {
+      show(nav.getAttribute("data-weergave"));
+    });
+  });
+
+  // --- Viewer ------------------------------------------------------------
+  var viewer = {sha: null, page: 1, pages: null, zoom: 1, cited: null, chunk: null};
+  var viewerEmpty = byId("viewer-leeg");
+  var viewerDocument = byId("viewer-document");
+  var viewerName = byId("viewer-naam");
+  var viewerType = byId("viewer-type");
+  var viewerTab = byId("viewer-tabblad");
+  var pageInput = byId("pagina");
+  var pageTotal = byId("pagina-totaal");
+  var previous = byId("vorige");
+  var next = byId("volgende");
+  var zoomValue = byId("zoom-waarde");
+  var cited = byId("geciteerd");
+  var image = byId("viewer-pagina");
+  var holder = byId("pagina-houder");
+  var marks = byId("markeringen");
+  var legend = byId("markering-legenda");
+  var area = byId("viewer-vlak");
+  var note = byId("viewer-melding");
+
+  function clearMarks() {
+    clear(marks);
+    legend.hidden = true;
+  }
+
+  // The highlight of the cited passage on the page shown, when the viewer
+  // was opened from a source; boxes are fractions of the page.
+  function loadMarks() {
+    var wanted = viewer.chunk;
+    var url = image.getAttribute("src");
+    if (!wanted || !url) {
+      return;
+    }
+    getJson(url.replace("/pagina?", "/markering?") + "&chunk=" + wanted).then(function (data) {
+      if (image.getAttribute("src") !== url || viewer.chunk !== wanted) {
+        return;
+      }
+      clearMarks();
+      (data.boxes || []).forEach(function (box) {
+        var mark = element("div", "markering");
+        mark.style.left = box[0] * 100 + "%";
+        mark.style.top = box[1] * 100 + "%";
+        mark.style.width = box[2] * 100 + "%";
+        mark.style.height = box[3] * 100 + "%";
+        marks.appendChild(mark);
+      });
+      if (marks.firstChild) {
+        legend.hidden = false;
+        area.scrollTop = Math.max(0, holder.offsetTop + marks.firstChild.offsetTop - 80);
+      }
+    }).catch(function () {
+      clearMarks();
+    });
+  }
+
+  function pageUrl(sha, page) {
+    return "/pagina?sha256=" + sha + "&nummer=" + page;
+  }
+
+  function parsePageUrl(href) {
+    var url;
+    try {
+      url = new URL(href, window.location.href);
+    } catch (error) {
+      return null;
+    }
+    var sha = url.searchParams.get("sha256") || "";
+    var page = url.searchParams.get("nummer") || "";
+    if (url.pathname !== "/pagina" || !HASH.test(sha) || !PAGE.test(page)) {
+      return null;
+    }
+    return {sha: sha, page: parseInt(page, 10)};
+  }
+
+  function render() {
+    if (viewer.sha === null) {
+      viewerEmpty.hidden = false;
+      viewerDocument.hidden = true;
+      return;
+    }
+    var meta = documents[viewer.sha] || {};
+    viewerEmpty.hidden = true;
+    viewerDocument.hidden = false;
+    viewerName.textContent = meta.name || "";
+    viewerName.title = meta.name || "";
+    viewerType.textContent = [meta.type, meta.pages_label].filter(Boolean).join(" \u00b7 ");
+    viewer.pages = typeof meta.pages === "number" ? meta.pages : null;
+    pageInput.value = String(viewer.page);
+    if (viewer.pages !== null) {
+      pageInput.max = String(viewer.pages);
+      pageTotal.textContent = "/ " + viewer.pages;
+    } else {
+      pageInput.removeAttribute("max");
+      pageTotal.textContent = "";
+    }
+    previous.disabled = viewer.page <= 1;
+    next.disabled = viewer.pages !== null && viewer.page >= viewer.pages;
+    cited.hidden = viewer.cited !== viewer.page;
+    zoomValue.textContent = Math.round(viewer.zoom * 100) + "%";
+    holder.style.width = viewer.zoom * 100 + "%";
+    var url = pageUrl(viewer.sha, viewer.page);
+    viewerTab.href = url;
+    if (image.getAttribute("src") !== url) {
+      clearMarks();
+      holder.hidden = true;
+      note.hidden = false;
+      note.textContent = loadingText;
+      image.src = url;
+    }
+  }
+
+  function openDocument(sha, page, citedPage, chunk) {
+    if (!HASH.test(sha)) {
+      return;
+    }
+    var newChunk = chunk && CHUNK.test(chunk) ? chunk : null;
+    var reload = viewer.chunk !== newChunk && viewer.sha === sha &&
+      viewer.page === (page > 0 ? page : 1);
+    viewer.sha = sha;
+    viewer.page = page > 0 ? page : 1;
+    viewer.cited = citedPage;
+    viewer.chunk = newChunk;
+    markDocument(sha);
+    render();
+    if (reload) {
+      // Same page, other passage: the image does not load again.
+      clearMarks();
+      loadMarks();
+    }
+  }
+
+  function goTo(page) {
+    if (viewer.sha === null || !(page >= 1)) {
+      return;
+    }
+    if (viewer.pages !== null && page > viewer.pages) {
+      page = viewer.pages;
+    }
+    viewer.page = page;
+    render();
+  }
+
+  function zoomBy(direction) {
+    var index = ZOOM_STEPS.indexOf(viewer.zoom);
+    if (index < 0) {
+      index = ZOOM_STEPS.indexOf(1);
+    }
+    index = Math.max(0, Math.min(ZOOM_STEPS.length - 1, index + direction));
+    viewer.zoom = ZOOM_STEPS[index];
+    render();
+  }
+
+  image.addEventListener("load", function () {
+    note.hidden = true;
+    holder.hidden = false;
+    loadMarks();
+  });
+  image.addEventListener("error", function () {
+    holder.hidden = true;
+    clearMarks();
+    note.hidden = false;
+    note.textContent = notFoundText;
+  });
+  previous.addEventListener("click", function () {
+    goTo(viewer.page - 1);
+  });
+  next.addEventListener("click", function () {
+    goTo(viewer.page + 1);
+  });
+  pageInput.addEventListener("change", function () {
+    var value = parseInt(pageInput.value, 10);
+    if (value >= 1) {
+      goTo(value);
+    } else {
+      render();
+    }
+  });
+  byId("uitzoomen").addEventListener("click", function () {
+    zoomBy(-1);
+  });
+  byId("inzoomen").addEventListener("click", function () {
+    zoomBy(1);
+  });
+  byId("passend").addEventListener("click", function () {
+    viewer.zoom = 1;
+    render();
+  });
+  byId("viewer-sluiten").addEventListener("click", function () {
+    viewer.sha = null;
+    viewer.cited = null;
+    viewer.chunk = null;
+    image.removeAttribute("src");
+    clearMarks();
+    markCard(null);
+    markDocument(null);
+    render();
+  });
+  document.addEventListener("keydown", function (event) {
+    var tag = (event.target && event.target.tagName) || "";
+    if (viewer.sha === null || tag === "TEXTAREA" || tag === "INPUT") {
+      return;
+    }
+    if (event.key === "ArrowLeft") {
+      goTo(viewer.page - 1);
+    } else if (event.key === "ArrowRight") {
+      goTo(viewer.page + 1);
+    }
+  });
+
+  // --- Sources in the chat -----------------------------------------------
+  var activeCard = null;
+
+  function markCard(card) {
+    if (activeCard) {
+      activeCard.classList.remove("actief");
+    }
+    activeCard = card;
+    if (card) {
+      card.classList.add("actief");
+    }
+  }
+
+  function openCard(card, link) {
+    var target = link || card.querySelector("a.paginalink");
+    if (!target) {
+      return false;
+    }
+    var parsed = parsePageUrl(target.getAttribute("href"));
+    if (!parsed) {
+      return false;
+    }
+    markCard(card);
+    openDocument(parsed.sha, parsed.page, parsed.page, card.getAttribute("data-chunk"));
+    return true;
+  }
+
+  list.addEventListener("click", function (event) {
+    if (event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey) {
+      return;
+    }
+    var link = event.target.closest("a");
+    var card;
+    if (link && link.classList.contains("paginalink")) {
+      card = link.closest(".bron");
+      if (card && openCard(card, link)) {
+        event.preventDefault();
+      }
+    } else if (link && link.classList.contains("citaat")) {
+      card = byId((link.getAttribute("href") || "").slice(1));
+      if (card) {
+        event.preventDefault();
+        card.scrollIntoView({block: "nearest", behavior: "smooth"});
+        openCard(card, null);
+      }
+    } else if (!link) {
+      card = event.target.closest(".bron");
+      if (card) {
+        openCard(card, null);
+      }
+    }
+  });
+
+  // --- Chat ----------------------------------------------------------------
   function setRunning(value) {
     running = value;
     input.disabled = value;
     button.disabled = value;
+  }
+
+  function updateEmpty() {
+    emptyChat.hidden = list.childNodes.length > 0;
   }
 
   // An exchange built from text only: the question and one note.
@@ -232,24 +1421,48 @@ button:disabled {
     asked.textContent = question;
     var answer = document.createElement("div");
     answer.className = "antwoord";
-    var note = document.createElement("p");
-    note.className = noteClass;
-    note.textContent = noteText;
-    answer.appendChild(note);
+    var line = document.createElement("p");
+    line.className = noteClass;
+    line.textContent = noteText;
+    answer.appendChild(line);
     section.appendChild(asked);
     section.appendChild(answer);
     return section;
   }
 
   function place(oldNode, newNode) {
+    if (oldNode.parentNode !== list) {
+      return;
+    }
     list.replaceChild(newNode, oldNode);
     newNode.scrollIntoView({block: "end"});
   }
 
+  // The server's fragment, in which every inserted text is escaped; the
+  // only place the page assigns HTML, for a new answer and a stored one.
+  function fragmentNode(fragment) {
+    var holder = document.createElement("div");
+    holder.innerHTML = fragment;
+    return holder;
+  }
+
+  // An item of the history as shown: an answer fragment or a note.
+  function itemNode(item) {
+    if (typeof item.fragment === "string") {
+      return fragmentNode(item.fragment);
+    }
+    return exchange(item.question || "", "melding", item.text || "");
+  }
+
+  var pending = null;
+
   function ask(question) {
-    var pending = exchange(question, "bezig", busyText);
-    list.appendChild(pending);
-    pending.scrollIntoView({block: "end"});
+    var chatId = ensureChat(question);
+    var node = exchange(question, "bezig", busyText);
+    pending = {chat: chatId, node: node};
+    list.appendChild(node);
+    updateEmpty();
+    node.scrollIntoView({block: "end"});
     setRunning(true);
     fetch("/vraag", {
       method: "POST",
@@ -261,13 +1474,13 @@ button:disabled {
       }
       return response.text();
     }).then(function (fragment) {
-      // The server's fragment, in which every inserted text is escaped.
-      var holder = document.createElement("div");
-      holder.innerHTML = fragment;
-      place(pending, holder);
+      addItem(chatId, {question: question, fragment: fragment});
+      place(node, fragmentNode(fragment));
     }).catch(function () {
-      place(pending, exchange(question, "melding", failText));
+      addItem(chatId, {question: question, text: failText});
+      place(node, exchange(question, "melding", failText));
     }).then(function () {
+      pending = null;
       setRunning(false);
       input.focus();
     });
@@ -294,7 +1507,624 @@ button:disabled {
     }
   });
 
-  input.focus();
+  byId("nieuwe-chat").addEventListener("click", function () {
+    newChat(null);
+  });
+
+  // --- History and projects ------------------------------------------------
+  // Kept in this browser only (localStorage): the chats with their
+  // questions and the server's answer fragments, and the projects. Nothing
+  // is sent back to the server; each question is still answered on its own.
+  var STORE_KEY = "companydocs-chats";
+  var historyBox = byId("geschiedenis");
+  var projectsBox = byId("projecten");
+  var chatsBox = byId("chats");
+  var noChats = byId("geen-chats");
+  var projectName = byId("project-naam");
+  var chatTitle = byId("chat-titel");
+  var chatProject = byId("chat-project");
+  var store = loadStore();
+  var current = {chat: null, project: null};
+  var openMenu = null;
+
+  function label(name) {
+    return historyBox.getAttribute("data-" + name) || "";
+  }
+
+  function loadStore() {
+    try {
+      var data = JSON.parse(window.localStorage.getItem(STORE_KEY) || "null");
+      if (data && data.version === 1 && Array.isArray(data.chats) &&
+          Array.isArray(data.projects)) {
+        return data;
+      }
+    } catch (error) {
+      // An unreadable store starts empty.
+    }
+    return {version: 1, projects: [], chats: []};
+  }
+
+  function saveStore() {
+    try {
+      window.localStorage.setItem(STORE_KEY, JSON.stringify(store));
+    } catch (error) {
+      // Without storage the history lasts as long as the page.
+    }
+  }
+
+  function newId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  }
+
+  function findChat(id) {
+    return store.chats.filter(function (chat) { return chat.id === id; })[0] || null;
+  }
+
+  function findProject(id) {
+    return store.projects.filter(function (project) { return project.id === id; })[0] || null;
+  }
+
+  function titleOf(question) {
+    var text = question.replace(/\s+/g, " ").trim();
+    return text.length > 60 ? text.slice(0, 57) + "..." : text;
+  }
+
+  // The chat a question belongs to, created with its first question.
+  function ensureChat(question) {
+    var chat = current.chat ? findChat(current.chat) : null;
+    if (!chat) {
+      var now = Date.now();
+      chat = {id: newId(), title: titleOf(question) || label("nieuwe-chat"),
+        project: current.project, created: now, updated: now, items: []};
+      store.chats.unshift(chat);
+      current.chat = chat.id;
+      saveStore();
+      renderHistory();
+      updateHeader();
+    }
+    return chat.id;
+  }
+
+  function addItem(chatId, item) {
+    var chat = findChat(chatId);
+    if (!chat) {
+      return;
+    }
+    chat.items.push(item);
+    chat.updated = Date.now();
+    store.chats.splice(store.chats.indexOf(chat), 1);
+    store.chats.unshift(chat);
+    saveStore();
+    renderHistory();
+  }
+
+  function updateHeader() {
+    var chat = current.chat ? findChat(current.chat) : null;
+    var project = current.project ? findProject(current.project) : null;
+    chatTitle.textContent = chat ? chat.title : label("nieuwe-chat");
+    chatProject.textContent = project ? project.name : "";
+    chatProject.hidden = !project;
+  }
+
+  function showChatItems(chat) {
+    clear(list);
+    markCard(null);
+    (chat ? chat.items : []).forEach(function (item) {
+      list.appendChild(itemNode(item));
+    });
+    if (pending && chat && pending.chat === chat.id) {
+      list.appendChild(pending.node);
+    }
+    updateEmpty();
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function openChat(id) {
+    var chat = findChat(id);
+    if (!chat) {
+      return;
+    }
+    current.chat = chat.id;
+    current.project = chat.project && findProject(chat.project) ? chat.project : null;
+    showChatItems(chat);
+    updateHeader();
+    show("chat");
+  }
+
+  function newChat(projectId) {
+    current.chat = null;
+    current.project = projectId && findProject(projectId) ? projectId : null;
+    showChatItems(null);
+    updateHeader();
+    show("chat");
+  }
+
+  function deleteChat(chat) {
+    if (!window.confirm(label("bevestig-chat"))) {
+      return;
+    }
+    store.chats.splice(store.chats.indexOf(chat), 1);
+    saveStore();
+    if (current.chat === chat.id) {
+      newChat(chat.project);
+    } else {
+      renderHistory();
+    }
+  }
+
+  function deleteProject(project) {
+    if (!window.confirm(label("bevestig-project"))) {
+      return;
+    }
+    store.chats.forEach(function (chat) {
+      if (chat.project === project.id) {
+        chat.project = null;
+      }
+    });
+    store.projects.splice(store.projects.indexOf(project), 1);
+    if (current.project === project.id) {
+      current.project = null;
+    }
+    saveStore();
+    updateHeader();
+    renderHistory();
+  }
+
+  function moveChat(chat, projectId) {
+    chat.project = projectId && findProject(projectId) ? projectId : null;
+    if (current.chat === chat.id) {
+      current.project = chat.project;
+      updateHeader();
+    }
+    saveStore();
+    renderHistory();
+  }
+
+  // --- The options menu ----------------------------------------------------
+  function closeMenu() {
+    if (openMenu) {
+      openMenu.parentNode.removeChild(openMenu);
+      openMenu = null;
+    }
+  }
+
+  // entries: {text, action} for a button, {heading} for a heading, {line}.
+  function showMenu(anchor, entries) {
+    closeMenu();
+    var menu = element("div", "menu");
+    menu.setAttribute("role", "menu");
+    entries.forEach(function (entry) {
+      if (entry.line) {
+        menu.appendChild(element("div", "menu-scheiding"));
+      } else if (entry.heading) {
+        menu.appendChild(element("div", "menu-kop", entry.heading));
+      } else {
+        var item = element("button", "", entry.text);
+        item.type = "button";
+        item.setAttribute("role", "menuitem");
+        item.addEventListener("click", function (event) {
+          event.stopPropagation();
+          closeMenu();
+          entry.action();
+        });
+        menu.appendChild(item);
+      }
+    });
+    document.body.appendChild(menu);
+    var box = anchor.getBoundingClientRect();
+    var top = Math.min(box.bottom + 4, window.innerHeight - menu.offsetHeight - 8);
+    menu.style.top = Math.max(8, top) + "px";
+    menu.style.left = Math.min(box.left, window.innerWidth - menu.offsetWidth - 8) + "px";
+    openMenu = menu;
+    var first = menu.querySelector("button");
+    if (first) {
+      first.focus();
+    }
+  }
+
+  document.addEventListener("click", function (event) {
+    if (openMenu && !openMenu.contains(event.target)) {
+      closeMenu();
+    }
+  });
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") {
+      closeMenu();
+    }
+  });
+
+  // A name edited in place: Enter keeps it, Escape or an empty name does not.
+  function editName(row, value, done) {
+    var field = element("input", "naam-invoer");
+    field.type = "text";
+    field.maxLength = 60;
+    field.value = value;
+    row.parentNode.replaceChild(field, row);
+    field.focus();
+    field.select();
+    var finished = false;
+    function finish(keep) {
+      if (finished) {
+        return;
+      }
+      finished = true;
+      var name = field.value.replace(/\s+/g, " ").trim();
+      if (keep && name) {
+        done(name);
+      } else {
+        renderHistory();
+      }
+    }
+    field.addEventListener("keydown", function (event) {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        finish(true);
+      } else if (event.key === "Escape") {
+        finish(false);
+      }
+    });
+    field.addEventListener("blur", function () {
+      finish(true);
+    });
+  }
+
+  // --- The lists -----------------------------------------------------------
+  function miniButton(text, title) {
+    var mini = element("button", "mini", text);
+    mini.type = "button";
+    mini.title = title;
+    mini.setAttribute("aria-label", title);
+    return mini;
+  }
+
+  function dropTarget(node, projectId) {
+    node.addEventListener("dragover", function (event) {
+      event.preventDefault();
+      node.classList.add("sleepdoel");
+    });
+    node.addEventListener("dragleave", function () {
+      node.classList.remove("sleepdoel");
+    });
+    node.addEventListener("drop", function (event) {
+      event.preventDefault();
+      node.classList.remove("sleepdoel");
+      var chat = findChat(event.dataTransfer.getData("text/plain"));
+      if (chat) {
+        moveChat(chat, projectId);
+      }
+    });
+  }
+
+  function chatRow(chat) {
+    var row = element("div", "rij");
+    row.classList.toggle("actief", shown === "chat" && current.chat === chat.id);
+    row.draggable = true;
+    row.addEventListener("dragstart", function (event) {
+      event.dataTransfer.setData("text/plain", chat.id);
+      event.dataTransfer.effectAllowed = "move";
+    });
+    var open = element("button", "rij-knop", chat.title);
+    open.type = "button";
+    open.title = chat.title;
+    open.addEventListener("click", function () {
+      openChat(chat.id);
+    });
+    var more = miniButton("\u22ef", label("opties"));
+    more.addEventListener("click", function (event) {
+      event.stopPropagation();
+      var entries = [
+        {text: label("naam-wijzigen"), action: function () {
+          editName(row, chat.title, function (name) {
+            chat.title = name;
+            saveStore();
+            updateHeader();
+            renderHistory();
+          });
+        }},
+        {line: true},
+        {heading: label("verplaatsen")}
+      ];
+      if (chat.project) {
+        entries.push({text: label("geen-project"), action: function () {
+          moveChat(chat, null);
+        }});
+      }
+      store.projects.forEach(function (project) {
+        if (project.id !== chat.project) {
+          entries.push({text: project.name, action: function () {
+            moveChat(chat, project.id);
+          }});
+        }
+      });
+      entries.push({line: true});
+      entries.push({text: label("verwijderen"), action: function () {
+        deleteChat(chat);
+      }});
+      showMenu(more, entries);
+    });
+    row.appendChild(open);
+    row.appendChild(more);
+    return row;
+  }
+
+  function projectNode(project) {
+    var group = element("div", "project");
+    group.classList.toggle("open", project.open !== false);
+    var head = element("div", "rij project-kop");
+    var toggle = element("button", "rij-knop", project.name);
+    toggle.type = "button";
+    toggle.title = project.name;
+    toggle.setAttribute("aria-expanded", project.open !== false ? "true" : "false");
+    toggle.addEventListener("click", function () {
+      project.open = project.open === false;
+      saveStore();
+      renderHistory();
+    });
+    var add = miniButton("+", label("nieuwe-chat-project"));
+    add.addEventListener("click", function (event) {
+      event.stopPropagation();
+      project.open = true;
+      newChat(project.id);
+    });
+    var more = miniButton("\u22ef", label("opties"));
+    more.addEventListener("click", function (event) {
+      event.stopPropagation();
+      showMenu(more, [
+        {text: label("nieuwe-chat-project"), action: function () {
+          project.open = true;
+          newChat(project.id);
+        }},
+        {text: label("naam-wijzigen"), action: function () {
+          editName(head, project.name, function (name) {
+            project.name = name;
+            saveStore();
+            updateHeader();
+            renderHistory();
+          });
+        }},
+        {line: true},
+        {text: label("verwijderen"), action: function () {
+          deleteProject(project);
+        }}
+      ]);
+    });
+    head.appendChild(toggle);
+    head.appendChild(add);
+    head.appendChild(more);
+    dropTarget(head, project.id);
+    group.appendChild(head);
+    if (project.open !== false) {
+      var inside = element("div", "project-chats");
+      var chats = store.chats.filter(function (chat) { return chat.project === project.id; });
+      chats.forEach(function (chat) {
+        inside.appendChild(chatRow(chat));
+      });
+      if (!chats.length) {
+        inside.appendChild(element("p", "project-leeg", label("project-leeg")));
+      }
+      group.appendChild(inside);
+    }
+    return group;
+  }
+
+  function renderHistory() {
+    closeMenu();
+    clear(projectsBox);
+    clear(chatsBox);
+    store.projects.forEach(function (project) {
+      projectsBox.appendChild(projectNode(project));
+    });
+    store.chats.forEach(function (chat) {
+      if (!chat.project || !findProject(chat.project)) {
+        chatsBox.appendChild(chatRow(chat));
+      }
+    });
+    noChats.hidden = store.chats.length > 0;
+    var startNew = byId("nieuwe-chat");
+    startNew.classList.toggle("actief", shown === "chat" && current.chat === null &&
+      current.project === null);
+  }
+
+  dropTarget(chatsBox, null);
+
+  byId("nieuw-project").addEventListener("click", function () {
+    projectName.hidden = false;
+    projectName.value = "";
+    projectName.focus();
+  });
+  function finishProject(keep) {
+    var name = projectName.value.replace(/\s+/g, " ").trim();
+    projectName.hidden = true;
+    if (keep && name) {
+      store.projects.push({id: newId(), name: name, open: true});
+      saveStore();
+      renderHistory();
+    }
+  }
+  projectName.addEventListener("keydown", function (event) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      finishProject(true);
+    } else if (event.key === "Escape") {
+      finishProject(false);
+    }
+  });
+  projectName.addEventListener("blur", function () {
+    finishProject(true);
+  });
+
+  // --- Documents -----------------------------------------------------------
+  var tree = byId("documentenlijst");
+  var search = byId("zoek");
+  var noDocuments = byId("geen-documenten");
+  var rows = [];
+
+  function markDocument(sha) {
+    rows.forEach(function (row) {
+      row.node.classList.toggle("actief", row.sha === sha);
+    });
+  }
+
+  function folderNode(name, depth) {
+    var details = element("details", "map");
+    details.open = depth < 2;
+    var summary = element("summary");
+    summary.appendChild(element("span", "", name));
+    var count = element("span", "map-teller");
+    summary.appendChild(count);
+    details.appendChild(summary);
+    var content = element("div", "map-inhoud");
+    details.appendChild(content);
+    return {node: details, content: content, count: count, folders: {}, order: [], total: 0};
+  }
+
+  function documentRow(entry) {
+    var row = element("button", "document-rij");
+    row.type = "button";
+    row.appendChild(element("span", "document-naam", entry.name));
+    row.appendChild(
+      element("span", "document-meta", [entry.type, entry.pages_label].filter(Boolean).join(" \u00b7 "))
+    );
+    row.addEventListener("click", function () {
+      markCard(null);
+      openDocument(entry.sha256, 1, null);
+    });
+    return row;
+  }
+
+  function buildLibrary(entries) {
+    var root = {content: tree, folders: {}, order: []};
+    var folders = [];
+    clear(tree);
+    entries.forEach(function (entry) {
+      documents[entry.sha256] = entry;
+      var parent = root;
+      var chain = [];
+      (entry.folders || []).forEach(function (name, depth) {
+        if (!parent.folders[name]) {
+          parent.folders[name] = folderNode(name, depth);
+          parent.content.appendChild(parent.folders[name].node);
+          folders.push(parent.folders[name]);
+        }
+        parent = parent.folders[name];
+        chain.push(parent);
+      });
+      var node = documentRow(entry);
+      parent.content.appendChild(node);
+      chain.forEach(function (folder) {
+        folder.total += 1;
+      });
+      rows.push({sha: entry.sha256, node: node, chain: chain,
+        text: (entry.name + " " + entry.type).toLowerCase()});
+    });
+    folders.forEach(function (folder) {
+      folder.count.textContent = String(folder.total);
+    });
+    byId("documenten-teller").textContent = entries.length ? String(entries.length) : "";
+    noDocuments.hidden = entries.length > 0;
+    return folders;
+  }
+
+  var allFolders = [];
+
+  search.addEventListener("input", function () {
+    var query = search.value.trim().toLowerCase();
+    var visible = 0;
+    allFolders.forEach(function (folder) {
+      folder.shown = 0;
+    });
+    rows.forEach(function (row) {
+      var match = query === "" || row.text.indexOf(query) >= 0;
+      row.node.hidden = !match;
+      if (match) {
+        visible += 1;
+        row.chain.forEach(function (folder) {
+          folder.shown += 1;
+        });
+      }
+    });
+    allFolders.forEach(function (folder) {
+      folder.node.hidden = folder.shown === 0;
+      if (query !== "") {
+        folder.node.open = true;
+      }
+    });
+    noDocuments.hidden = visible > 0;
+  });
+
+  // --- Status --------------------------------------------------------------
+  function buildStatus(status) {
+    byId("status-modus").textContent = status.mode || "-";
+    byId("status-model").textContent = status.model || "";
+    var host = byId("status-host");
+    host.textContent = status.host || "";
+    host.hidden = !status.host;
+    byId("status-documenten").textContent = status.documents || "";
+  }
+
+  // --- Divider -------------------------------------------------------------
+  var workspace = byId("werkvlak");
+  var divider = byId("scheiding");
+
+  function setWidth(width) {
+    var total = workspace.getBoundingClientRect().width;
+    var clamped = Math.max(340, Math.min(total - 340, width));
+    workspace.style.gridTemplateColumns = clamped + "px 6px minmax(340px, 1fr)";
+    return clamped;
+  }
+
+  divider.addEventListener("pointerdown", function (event) {
+    event.preventDefault();
+    divider.setPointerCapture(event.pointerId);
+    divider.classList.add("slepen");
+  });
+  divider.addEventListener("pointermove", function (event) {
+    if (!divider.classList.contains("slepen")) {
+      return;
+    }
+    setWidth(event.clientX - workspace.getBoundingClientRect().left);
+  });
+  divider.addEventListener("pointerup", function (event) {
+    divider.classList.remove("slepen");
+    divider.releasePointerCapture(event.pointerId);
+    var columns = workspace.style.gridTemplateColumns;
+    try {
+      window.localStorage.setItem(WIDTH_KEY, String(parseInt(columns, 10)));
+    } catch (error) {
+      // The width is a convenience; without storage it is not kept.
+    }
+  });
+  divider.addEventListener("dblclick", function () {
+    workspace.style.gridTemplateColumns = "";
+    try {
+      window.localStorage.removeItem(WIDTH_KEY);
+    } catch (error) {
+      // As above.
+    }
+  });
+  try {
+    var saved = parseInt(window.localStorage.getItem(WIDTH_KEY) || "", 10);
+    if (saved > 0) {
+      setWidth(saved);
+    }
+  } catch (error) {
+    // As above.
+  }
+
+  // --- Start ---------------------------------------------------------------
+  getJson("/documenten").then(function (data) {
+    allFolders = buildLibrary(data.documents || []);
+    render();
+  }).catch(function () {
+    noDocuments.hidden = false;
+  });
+  getJson("/status").then(buildStatus).catch(function () {
+    return null;
+  });
+
+  updateEmpty();
+  updateHeader();
+  show("chat");
 }());
 </script>
 </body>
