@@ -24,7 +24,10 @@ code, and nothing later is opened (R2):
 5. the raw folder must be a folder (2);
 6. the type override file (2);
 7. the exclusive bind on 127.0.0.1 and the port (2);
-8. the hash to file map and the document types (WARNINGs only);
+8. the hash to file map, the document types and spec 011's views: the
+   library with each PDF's page count, the status block, and the
+   highlighter over ``data/interim/chunks`` and ``data/interim/ocr_cache``
+   (WARNINGs only);
 9. the ``Answerer``: index unusable 1, settings 2, the warm-up 3;
 10. the URL, the only line on stdout; then serving until Ctrl+C, which
     closes the server socket and the ``Answerer`` and exits 0.
@@ -58,13 +61,17 @@ from companydocs_rag.answering.cli import (
 from companydocs_rag.answering.generator import read_api_key
 from companydocs_rag.answering.prompt import load_system_prompt
 from companydocs_rag.answering.settings import answering_settings, resolve_project_path
+from companydocs_rag.chunking.cli import DEFAULT_CHUNKS_RELATIVE_PATH
 from companydocs_rag.embeddings.dense import SettingsError, embeddings_settings
+from companydocs_rag.ingestion.cli import DEFAULT_OCR_CACHE_RELATIVE_PATH
 from companydocs_rag.metadata.cli import DEFAULT_TYPE_OVERRIDES_RELATIVE_PATH
 from companydocs_rag.metadata.doctype import ManualFileError, read_type_overrides
 from companydocs_rag.retrieval.search import IndexUnusableError, retrieval_settings
 from companydocs_rag.vectorstore.cli import default_index_dir
 
+from .highlight import Highlighter
 from .htmlpage import build_page
+from .library import document_library, status_block
 from .pageview import build_file_map, document_types
 from .server import HOST, DemoApp, DemoServer, serve
 from .settings import PORT_MAX, PORT_MIN, interface_settings
@@ -73,6 +80,8 @@ logger = logging.getLogger(__name__)
 
 EXIT_STOPPED = 0
 DEFAULT_RAW_RELATIVE_PATH = Path("data") / "raw"
+DEFAULT_HIGHLIGHT_CHUNKS_RELATIVE_PATH = DEFAULT_CHUNKS_RELATIVE_PATH
+DEFAULT_HIGHLIGHT_OCR_CACHE_RELATIVE_PATH = DEFAULT_OCR_CACHE_RELATIVE_PATH
 
 _DIGITS = re.compile("[0-9]+")
 
@@ -123,14 +132,18 @@ def main(
     *,
     raw_dir: Optional[Path] = None,
     type_overrides: Optional[Path] = None,
+    chunks_dir: Optional[Path] = None,
+    ocr_cache_dir: Optional[Path] = None,
     retriever: Any = None,
     transport: Optional[httpx.BaseTransport] = None,
     stop: Optional[threading.Event] = None,
 ) -> int:
     """The command. The keyword-only seams (R19): ``raw_dir`` replaces
-    ``data/raw``, ``type_overrides`` the override file, ``retriever`` and
-    ``transport`` go to the ``Answerer`` (as for ``companydocs-answer``), and
-    ``stop``, when set, ends the serving as Ctrl+C does."""
+    ``data/raw``, ``type_overrides`` the override file, ``chunks_dir`` and
+    ``ocr_cache_dir`` the highlighter's chunk folder and OCR cache,
+    ``retriever`` and ``transport`` go to the ``Answerer`` (as for
+    ``companydocs-answer``), and ``stop``, when set, ends the serving as
+    Ctrl+C does."""
     args = build_parser().parse_args(argv)
     logging.basicConfig(level=logging.WARNING, format="%(levelname)s %(message)s")
 
@@ -183,6 +196,21 @@ def main(
     try:
         files = build_file_map(raw)
         types = document_types(files, overrides)
+        views = {
+            "library": document_library(raw, files, types),
+            "status": status_block(config.base_url, config.model, len(files)),
+            "highlighter": Highlighter(
+                files,
+                chunks_dir
+                if chunks_dir is not None
+                else resolve_project_path(str(DEFAULT_HIGHLIGHT_CHUNKS_RELATIVE_PATH)),
+                ocr_cache_dir
+                if ocr_cache_dir is not None
+                else resolve_project_path(
+                    str(DEFAULT_HIGHLIGHT_OCR_CACHE_RELATIVE_PATH)
+                ),
+            ),
+        }
         try:
             answerer = Answerer(
                 args.index_dir, retriever=retriever, transport=transport
@@ -202,7 +230,9 @@ def main(
             return EXIT_GENERATOR_UNAVAILABLE
 
         with answerer:
-            server.app = DemoApp(answerer, files, types, interface, build_page())
+            server.app = DemoApp(
+                answerer, files, types, interface, build_page(), **views
+            )
             _write_url(server.server_port)
             try:
                 serve(server, stop if stop is not None else threading.Event())

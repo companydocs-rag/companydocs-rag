@@ -35,6 +35,7 @@ DISTRIBUTIONS = {
     "httpx": "httpx",
     "pytest": "pytest",
     "PIL": "pillow",
+    "pdfplumber": "pdfplumber",
     "qdrant_client": "qdrant-client",
     "yaml": "pyyaml",
 }
@@ -86,6 +87,7 @@ def test_running_main_up_to_the_url_and_the_stop_imports_no_model_library(tmp_pa
         "    code = cli.main(\n"
         "        ['--index-dir', str(base / 'index'), '--port', str(port)],\n"
         "        raw_dir=base / 'raw', type_overrides=base / 'geen.csv',\n"
+        "        chunks_dir=base / 'geen-chunks', ocr_cache_dir=base / 'geen-ocr',\n"
         "        retriever=FakeRetriever(simple_result()),\n"
         "        transport=generator.transport, stop=stop)\n"
         "finally:\n"

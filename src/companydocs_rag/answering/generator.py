@@ -116,6 +116,8 @@ def request_body(
         "seed": config.seed,
         "stream": False,
     }
+    if config.temperature is None:  # the setting is null: leave the key out
+        del body["temperature"]
     if config.reasoning_effort is not None:
         body["reasoning_effort"] = config.reasoning_effort
     body.update(config.extra_body)

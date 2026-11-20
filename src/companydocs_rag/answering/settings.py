@@ -93,7 +93,7 @@ class AnsweringSettings:
     api_key_env: Optional[str]
     context_window: int
     max_tokens: int
-    temperature: float
+    temperature: Optional[float]
     seed: int
     reasoning_effort: Optional[str]
     extra_body: Dict[str, Any]
@@ -213,14 +213,17 @@ def answering_settings(
         section, values, "context_window", CONTEXT_WINDOW, minimum=1
     )
     max_tokens = setting_integer(section, values, "max_tokens", MAX_TOKENS, minimum=1)
-    temperature = setting_number(
-        section,
-        values,
-        "temperature",
-        TEMPERATURE,
-        requirement="a finite number of at least 0",
-        valid=lambda number: math.isfinite(number) and number >= 0,
-    )
+    # null leaves temperature out of the request: some hosted models reject it.
+    temperature: Optional[float] = None
+    if "temperature" not in values or values["temperature"] is not None:
+        temperature = setting_number(
+            section,
+            values,
+            "temperature",
+            TEMPERATURE,
+            requirement="a finite number of at least 0, or null",
+            valid=lambda number: math.isfinite(number) and number >= 0,
+        )
     seed = setting_integer(section, values, "seed", SEED, minimum=0)
     reasoning_effort = _optional_string(values, "reasoning_effort", REASONING_EFFORT)
     extra_body = _extra_body(values)
