@@ -10,6 +10,9 @@ baseline.
 
 The challenge was approved by the lecturer; the challenge form states this.
 
+Tables and figures for all three contributions, computed from the result files:
+[notebooks/contributions.ipynb](../notebooks/contributions.ipynb).
+
 ## Shared foundation (team)
 
 | what | where |
